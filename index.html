@@ -1,0 +1,3250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PITCH CLASH XI — 1v1 Action Football Card Battle</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Chakra Petch (Athletic Display), Inter (UI), JetBrains Mono (Stats) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,600;0,700;1,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Chakra Petch"', 'sans-serif'],
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    :root {
+      --bg-obsidian: #050811;
+      --gold: #f59e0b;
+      --emerald: #10b981;
+      --crimson: #ef4444;
+      --cyan: #06b6d4;
+      --indigo: #6366f1;
+      --violet: #a855f7;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background-color: var(--bg-obsidian);
+      color: #f8fafc;
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Stadium Obsidian Floodlight Atmosphere */
+    .stadium-bg {
+      background:
+        radial-gradient(ellipse 65% 38% at 15% -5%, rgba(16, 185, 129, 0.18), transparent 65%),
+        radial-gradient(ellipse 65% 38% at 85% -5%, rgba(245, 158, 11, 0.18), transparent 65%),
+        radial-gradient(ellipse 90% 55% at 50% 55%, rgba(6, 182, 212, 0.08), transparent 72%),
+        linear-gradient(180deg, #060a14 0%, #050811 55%, #070d19 100%);
+    }
+
+    /* Tactical Pitch Surface */
+    .pitch-surface {
+      background:
+        repeating-linear-gradient(
+          90deg,
+          rgba(16, 185, 129, 0.09) 0px,
+          rgba(16, 185, 129, 0.09) 48px,
+          rgba(6, 78, 59, 0.15) 48px,
+          rgba(6, 78, 59, 0.15) 96px
+        ),
+        radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.17), rgba(5, 11, 21, 0.94) 86%);
+      border: 1px solid rgba(16, 185, 129, 0.34);
+      box-shadow:
+        inset 0 0 64px rgba(0, 0, 0, 0.78),
+        0 18px 46px rgba(0, 0, 0, 0.58);
+    }
+
+    /* Action Footballer Card Shell */
+    .fc-card {
+      position: relative;
+      border-radius: 16px;
+      background: linear-gradient(155deg, #162038 0%, #0b1120 55%, #070b14 100%);
+      border: 1.5px solid rgba(255, 255, 255, 0.16);
+      overflow: hidden;
+      transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+      transform-style: preserve-3d;
+      user-select: none;
+    }
+
+    /* Holographic Metallic Sheen */
+    .fc-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        118deg,
+        transparent 16%,
+        rgba(255, 255, 255, 0.18) 42%,
+        rgba(245, 158, 11, 0.22) 52%,
+        rgba(16, 185, 129, 0.14) 60%,
+        transparent 76%
+      );
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      pointer-events: none;
+      z-index: 25;
+    }
+
+    .fc-card:hover::before {
+      opacity: 1;
+    }
+
+    .fc-card.selectable {
+      cursor: pointer;
+      border-color: rgba(245, 158, 11, 0.62);
+      box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.22), 0 10px 24px rgba(0, 0, 0, 0.55);
+    }
+
+    .fc-card.selectable:hover {
+      transform: translateY(-7px) scale(1.03);
+      border-color: #fbbf24;
+      box-shadow: 0 0 26px rgba(245, 158, 11, 0.38), 0 16px 32px rgba(0, 0, 0, 0.68);
+    }
+
+    .fc-card.selected {
+      transform: translateY(-10px) scale(1.04);
+      border-color: #34d399 !important;
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.58), 0 18px 36px rgba(0, 0, 0, 0.74) !important;
+    }
+
+    .fc-card.carrier-active {
+      border-color: #fbbf24 !important;
+      box-shadow: 0 0 22px rgba(245, 158, 11, 0.45);
+    }
+
+    .fc-card.dimmed {
+      opacity: 0.44;
+      filter: saturate(0.45);
+      cursor: not-allowed;
+    }
+
+    .fc-card.locked-card {
+      opacity: 0.52;
+      filter: grayscale(0.55);
+      border-color: rgba(239, 68, 68, 0.75) !important;
+      cursor: not-allowed;
+    }
+
+    /* Kinetic Speed Lines Overlay */
+    .speed-lines {
+      background-image: repeating-linear-gradient(
+        -28deg,
+        rgba(255, 255, 255, 0.045) 0px,
+        rgba(255, 255, 255, 0.045) 2px,
+        transparent 2px,
+        transparent 11px
+      );
+    }
+
+    /* Opponent Hidden Card Back */
+    .fc-card-back {
+      background:
+        radial-gradient(circle at 50% 35%, rgba(245, 158, 11, 0.22), transparent 65%),
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0 4px, transparent 4px 10px),
+        linear-gradient(155deg, #172138 0%, #090e1a 100%);
+      border: 1.5px solid rgba(148, 163, 184, 0.26);
+      box-shadow: inset 0 0 16px rgba(0, 0, 0, 0.75);
+    }
+
+    /* Active Duel Stat Neon Pulse */
+    @keyframes statPulse {
+      0%, 100% { box-shadow: 0 0 8px rgba(251, 191, 36, 0.55), inset 0 0 6px rgba(251, 191, 36, 0.25); }
+      50% { box-shadow: 0 0 18px rgba(251, 191, 36, 0.95), inset 0 0 12px rgba(251, 191, 36, 0.45); }
+    }
+    .stat-active {
+      animation: statPulse 1.3s ease-in-out infinite;
+      border-color: #fbbf24 !important;
+      background: rgba(245, 158, 11, 0.24) !important;
+    }
+
+    /* Card Slam Animations */
+    @keyframes slamLeft {
+      0% { transform: translateX(-85px) scale(1.15) rotate(-7deg); opacity: 0; }
+      65% { transform: translateX(6px) scale(0.98) rotate(1.2deg); opacity: 1; }
+      100% { transform: translateX(0) scale(1) rotate(0deg); opacity: 1; }
+    }
+    @keyframes slamRight {
+      0% { transform: translateX(85px) scale(1.15) rotate(7deg); opacity: 0; }
+      65% { transform: translateX(-6px) scale(0.98) rotate(-1.2deg); opacity: 1; }
+      100% { transform: translateX(0) scale(1) rotate(0deg); opacity: 1; }
+    }
+    .animate-slam-left {
+      animation: slamLeft 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    .animate-slam-right {
+      animation: slamRight 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* Goal Flash Animation */
+    @keyframes goalBurst {
+      0% { transform: scale(0.6); opacity: 0; }
+      35% { transform: scale(1.08); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-goal-burst {
+      animation: goalBurst 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes floatSlow {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+    .animate-float {
+      animation: floatSlow 3.6s ease-in-out infinite;
+    }
+
+    @keyframes ballPulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1); box-shadow: 0 0 14px rgba(251, 191, 36, 0.8); }
+      50% { transform: translate(-50%, -50%) scale(1.15); box-shadow: 0 0 26px rgba(251, 191, 36, 1); }
+    }
+    .radar-ball {
+      animation: ballPulse 1.5s ease-in-out infinite;
+      transition: left 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Sleek Action Buttons */
+    .btn-action {
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.16s ease, box-shadow 0.2s ease, filter 0.16s ease;
+    }
+    .btn-action:hover:not(:disabled) {
+      transform: translateY(-2px);
+      filter: brightness(1.08);
+    }
+    .btn-action:active:not(:disabled) {
+      transform: translateY(1px) scale(0.98);
+    }
+    .btn-action:disabled {
+      opacity: 0.42;
+      cursor: not-allowed;
+    }
+
+    /* Custom Scrollbar */
+    .thin-scroll::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    .thin-scroll::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.65);
+      border-radius: 999px;
+    }
+    .thin-scroll::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.35);
+      border-radius: 999px;
+    }
+    .thin-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(245, 158, 11, 0.65);
+    }
+  </style>
+</head>
+<body class="stadium-bg text-slate-100 antialiased selection:bg-amber-500/30 selection:text-amber-200">
+
+  <!-- ===================================================================== -->
+  <!-- TOP NAVIGATION & LIVE MATCH SCOREBOARD HEADER                         -->
+  <!-- ===================================================================== -->
+  <header class="sticky top-0 z-40 backdrop-blur-md bg-slate-950/88 border-b border-white/10">
+    <div class="max-w-7xl mx-auto px-3 sm:px-5 py-2.5 flex items-center justify-between gap-2">
+      <!-- Brand -->
+      <div class="flex items-center gap-2.5 shrink-0">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 via-orange-500 to-rose-600 flex items-center justify-center shadow-lg shadow-amber-500/25 border border-amber-300/40 shrink-0">
+          <svg class="w-5 h-5 text-slate-950" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm3.9 5.3-1.4 2.8-3-.9-2.2 2.2.9 3-2.8 1.4A7.94 7.94 0 0 1 4.1 12c0-.6.1-1.3.2-1.9l2.4-.7 1.7-2.4-.4-2.1A7.92 7.92 0 0 1 12 4a7.9 7.9 0 0 1 3.9 1.1ZM12 20a7.9 7.9 0 0 1-3.4-.8l2.2-1.1h2.4l2.2 1.1A7.9 7.9 0 0 1 12 20Zm5.7-2.9-1.9-1-.7-2.6 1.8-1.9 2.6.6a7.92 7.92 0 0 1-1.8 4.9Z"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="font-display font-bold text-base sm:text-xl tracking-wider leading-none bg-gradient-to-r from-white via-amber-200 to-amber-400 bg-clip-text text-transparent">
+            PITCH CLASH XI
+          </h1>
+          <p class="text-[10px] sm:text-xs text-slate-400 tracking-wide uppercase">4-4-2 Tactical Football Card Duel</p>
+        </div>
+      </div>
+
+      <!-- Center Scoreboard (Visible during Active Match) -->
+      <div id="headerScoreboard" class="hidden items-center gap-2 sm:gap-4 px-3 py-1.5 rounded-xl bg-slate-900/95 border border-white/10 shadow-inner">
+        <div class="text-right">
+          <div id="hdrP1Name" class="text-[10px] sm:text-xs font-bold text-emerald-400 uppercase truncate max-w-[68px] sm:max-w-[115px]">YOU</div>
+          <div class="flex items-center justify-end gap-1 text-[9px] font-mono">
+            <span id="hdrP1Role" class="text-slate-400">ATT</span>
+            <span id="hdrP1Ovr" class="text-amber-300 font-bold">OVR 90.0</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5 sm:gap-2 font-mono font-extrabold text-lg sm:text-2xl px-2.5 py-0.5 rounded-lg bg-slate-950 border border-white/10">
+          <span id="hdrP1Score" class="text-emerald-400">0</span>
+          <span class="text-slate-600 text-sm">:</span>
+          <span id="hdrP2Score" class="text-rose-400">0</span>
+        </div>
+        <div class="text-left">
+          <div id="hdrP2Name" class="text-[10px] sm:text-xs font-bold text-rose-400 uppercase truncate max-w-[68px] sm:max-w-[115px]">OPP</div>
+          <div class="flex items-center gap-1 text-[9px] font-mono">
+            <span id="hdrP2Role" class="text-slate-400">DEF</span>
+            <span id="hdrP2Ovr" class="text-amber-300 font-bold">OVR 90.0</span>
+          </div>
+        </div>
+        <div class="hidden md:flex flex-col items-center pl-2.5 border-l border-white/10">
+          <span id="hdrTargetBadge" class="text-[10px] font-mono font-bold text-amber-400 uppercase">FIRST TO 3</span>
+          <span id="hdrRoomBadge" class="text-[10px] text-slate-400 font-mono cursor-pointer hover:text-cyan-300" title="Click to copy invite link"></span>
+        </div>
+      </div>
+
+      <!-- Right Utility Buttons -->
+      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <button id="btnSoundToggle" onclick="toggleSound()" class="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/10 text-slate-200 transition" title="Toggle Stadium SFX">
+          <span id="soundIcon" class="text-sm sm:text-base">🔊</span>
+        </button>
+        <button onclick="openRulesModal()" class="px-2.5 sm:px-3 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-white/10 text-xs sm:text-sm font-semibold text-amber-300 transition flex items-center gap-1.5">
+          <span>📖</span><span class="hidden sm:inline">Rules</span>
+        </button>
+        <button id="btnLeaveMatch" onclick="requestLeaveMatch()" class="hidden px-2.5 sm:px-3 py-2 rounded-xl bg-rose-950/75 hover:bg-rose-900/80 border border-rose-500/35 text-xs sm:text-sm font-semibold text-rose-300 transition">
+          Exit
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast Notification Container -->
+  <div id="toastContainer" class="fixed top-16 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-xs sm:max-w-sm"></div>
+
+  <!-- ===================================================================== -->
+  <!-- VIEW 1: LOBBY & MATCHMAKING                                           -->
+  <!-- ===================================================================== -->
+  <main id="lobbyView" class="max-w-6xl mx-auto px-4 py-6 sm:py-9">
+    <!-- Hero Showcase -->
+    <section class="relative rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-slate-900/95 via-slate-950/95 to-emerald-950/40 p-6 sm:p-9 mb-6 shadow-2xl">
+      <div class="absolute inset-0 speed-lines opacity-40 pointer-events-none"></div>
+      <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <div class="lg:col-span-7 space-y-4">
+          <div class="inline-flex flex-wrap items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-400/30 text-amber-300 text-xs font-bold tracking-wider uppercase">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            52 World Stars • Balanced 4-4-2 • Stackable Boosters • Long Shots
+          </div>
+          <h2 class="font-display font-bold text-3xl sm:text-5xl leading-tight tracking-tight text-white">
+            STACK BOOSTERS.<br />
+            <span class="bg-gradient-to-r from-amber-300 via-orange-400 to-emerald-400 bg-clip-text text-transparent">
+              ROTATE STAMINA. STRIKE!
+            </span>
+          </h2>
+          <p class="text-slate-300 text-sm sm:text-base max-w-xl leading-relaxed">
+            Command a balanced 4-4-2 squad (2 ATT, 4 MID, 4 DEF, 1 GK). Win the ball to stack up to 10 Stat Boosters (+2 each), manage live card stamina & defeated lockouts, advance with ANY outfield player, or unleash a Long-Range Thunderbolt from distance!
+          </p>
+
+          <!-- Manager Name & Goal Target Controls -->
+          <div class="flex flex-col sm:flex-row gap-3 pt-1 max-w-xl">
+            <div class="flex-1">
+              <label for="managerNameInput" class="block text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Club / Manager Name</label>
+              <input id="managerNameInput" type="text" maxlength="16" placeholder="e.g. FC Obsidian" value="Manager 1"
+                class="w-full px-4 py-2.5 rounded-xl bg-slate-900/90 border border-white/15 focus:border-amber-400 focus:outline-none text-white font-semibold text-sm placeholder:text-slate-500" />
+            </div>
+            <div>
+              <label class="block text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-1">Match Target</label>
+              <div class="inline-flex rounded-xl bg-slate-900/90 border border-white/15 p-1 gap-1">
+                <button id="btnTarget3" onclick="setMatchTargetGoals(3)" class="px-3.5 py-1.5 rounded-lg text-xs font-mono font-extrabold bg-amber-400 text-slate-950 transition">
+                  3 Goals
+                </button>
+                <button id="btnTarget5" onclick="setMatchTargetGoals(5)" class="px-3.5 py-1.5 rounded-lg text-xs font-mono font-extrabold text-slate-300 hover:text-white transition">
+                  5 Goals
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Animated Showcase Cards -->
+        <div class="lg:col-span-5 flex items-center justify-center py-2">
+          <div id="showcaseCards" class="flex items-center justify-center -space-x-6 sm:-space-x-4"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Waiting Room Banner (Shown when hosting Online 1v1) -->
+    <section id="waitingRoomPanel" class="hidden mb-6 rounded-2xl border-2 border-cyan-400/45 bg-gradient-to-r from-slate-900/95 via-cyan-950/40 to-slate-900/95 p-5 sm:p-6 shadow-xl">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="space-y-1.5 w-full">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-cyan-400 animate-ping"></span>
+            <h3 class="font-display font-bold text-xl text-cyan-300 uppercase tracking-wide">Stadium Room Live — Waiting for Friend</h3>
+            <span id="waitBalanceBadge" class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[11px] font-mono font-bold"></span>
+          </div>
+          <p class="text-slate-300 text-sm">Share the invite link or room code below. Both balanced 4-4-2 squads are dealt and ready to kick off!</p>
+          <div class="flex flex-wrap items-center gap-2 pt-2">
+            <div class="px-3.5 py-2 rounded-xl bg-slate-950 border border-cyan-400/35 font-mono font-extrabold text-lg tracking-widest text-amber-300" id="waitRoomCode">------</div>
+            <button onclick="copyInviteLink()" class="btn-action px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-sm shadow-lg shadow-cyan-500/25 flex items-center gap-2">
+              🔗 Copy Invite Link
+            </button>
+            <button onclick="copyRoomCode()" class="btn-action px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/15 text-slate-200 font-semibold text-sm">
+              📋 Copy Code
+            </button>
+            <button onclick="cancelHosting()" class="px-3.5 py-2.5 rounded-xl bg-rose-950/75 hover:bg-rose-900/80 border border-rose-500/35 text-rose-300 font-semibold text-sm">
+              Cancel
+            </button>
+          </div>
+          <p id="waitShareUrlText" class="text-[11px] font-mono text-slate-400 break-all pt-1"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 Mode Selection Cards -->
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-7">
+      <!-- Mode 1: Online 1v1 -->
+      <div class="rounded-2xl bg-slate-900/85 border border-cyan-500/35 p-5 sm:p-6 flex flex-col justify-between shadow-xl hover:border-cyan-400/65 transition">
+        <div>
+          <div class="w-11 h-11 rounded-xl bg-cyan-500/15 border border-cyan-400/30 flex items-center justify-center text-2xl mb-4">🌐</div>
+          <h3 class="font-display font-bold text-xl text-white mb-1.5">Online 1v1 (Share Link)</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-5">
+            Create a live 1v1 room with balanced 4-4-2 squads and send an invite link (`?room=CODE`) so a friend auto-joins instantly.
+          </p>
+        </div>
+        <div class="space-y-3">
+          <button id="btnCreateOnline" onclick="createOnlineMatch()" class="btn-action w-full py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 font-extrabold text-sm tracking-wide uppercase shadow-lg shadow-cyan-500/25">
+            ⚡ Create 1v1 Match Link
+          </button>
+          <div class="pt-2 border-t border-white/10">
+            <label class="block text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-1.5">Join by Room Code or Link</label>
+            <div class="flex gap-2">
+              <input id="joinCodeInput" type="text" placeholder="Code or paste invite URL"
+                class="flex-1 min-w-0 px-3 py-2 rounded-xl bg-slate-950 border border-white/15 focus:border-cyan-400 focus:outline-none text-sm font-mono uppercase text-white placeholder:normal-case placeholder:text-slate-500" />
+              <button onclick="joinOnlineMatchFromInput()" class="btn-action px-4 py-2 rounded-xl bg-slate-800 hover:bg-cyan-600 text-white font-bold text-sm border border-white/15">
+                Join
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mode 2: Quick Match vs AI -->
+      <div class="rounded-2xl bg-slate-900/85 border border-amber-500/35 p-5 sm:p-6 flex flex-col justify-between shadow-xl hover:border-amber-400/65 transition">
+        <div>
+          <div class="w-11 h-11 rounded-xl bg-amber-500/15 border border-amber-400/30 flex items-center justify-center text-2xl mb-4">🤖</div>
+          <h3 class="font-display font-bold text-xl text-white mb-1.5">Quick Match vs AI</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-5">
+            Face a tactical AI that rotates stamina, avoids locked cards, stacks boosters intelligently, and triggers Long Shots when the +5 threshold hits!
+          </p>
+        </div>
+        <button onclick="startLocalOrAiMatch('ai')" class="btn-action w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-slate-950 font-extrabold text-sm tracking-wide uppercase shadow-lg shadow-amber-500/25">
+          🏟️ Kick Off vs AI
+        </button>
+      </div>
+
+      <!-- Mode 3: Local 1v1 Pass & Play -->
+      <div class="rounded-2xl bg-slate-900/85 border border-emerald-500/35 p-5 sm:p-6 flex flex-col justify-between shadow-xl hover:border-emerald-400/65 transition">
+        <div>
+          <div class="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-400/30 flex items-center justify-center text-2xl mb-4">👥</div>
+          <h3 class="font-display font-bold text-xl text-white mb-1.5">Local 1v1 (Pass & Play)</h3>
+          <p class="text-slate-400 text-sm leading-relaxed mb-5">
+            Play head-to-head on one device with automatic privacy overlays between secret card, pass, and booster selections.
+          </p>
+        </div>
+        <button onclick="startLocalOrAiMatch('local')" class="btn-action w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-500 text-slate-950 font-extrabold text-sm tracking-wide uppercase shadow-lg shadow-emerald-500/25">
+          ⚔️ Start Local 1v1
+        </button>
+      </div>
+    </section>
+
+    <!-- Mechanics Overview Strip + Server Status -->
+    <section class="rounded-2xl bg-slate-900/65 border border-white/10 p-4 sm:p-5">
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        <div class="p-3 rounded-xl bg-slate-950/85 border border-white/5">
+          <div class="text-[11px] font-mono font-bold text-amber-400">⚡ STACKABLE BOOSTERS</div>
+          <div class="text-xs font-bold text-white mt-0.5">Win the Ball = +1 Booster</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">Stack up to 10 (+2 stats each, up to +20!)</div>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-950/85 border border-white/5">
+          <div class="text-[11px] font-mono font-bold text-emerald-400">🔋 STAMINA & LOCKOUT</div>
+          <div class="text-xs font-bold text-white mt-0.5">-22% Duel / +15% Rest</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">Defeated card is LOCKED next turn!</div>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-950/85 border border-white/5">
+          <div class="text-[11px] font-mono font-bold text-cyan-400">⚽ ANYONE CAN SCORE</div>
+          <div class="text-xs font-bold text-white mt-0.5">ATT, MID & DEF Attack</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">Carry or pass to fresh teammates!</div>
+        </div>
+        <div class="p-3 rounded-xl bg-slate-950/85 border border-white/5">
+          <div class="text-[11px] font-mono font-bold text-rose-400">🎯 LONG-RANGE SHOTS</div>
+          <div class="text-xs font-bold text-white mt-0.5">Shoot from Zone 1, 2 or 3</div>
+          <div class="text-[11px] text-slate-400 mt-0.5">Needs PWR≥SAV+5, FIN≥DIV+5, PWR≥HND+5</div>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-white/10 text-[11px] text-slate-400">
+        <div class="flex items-center gap-2">
+          <span id="onlineStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+          <span id="onlineStatusText">Connecting to live stadium servers...</span>
+        </div>
+        <div class="font-mono text-[10px] sm:text-[11px] text-slate-500 break-all">
+          Player ID: <span id="fullUserIdDisplay" class="text-slate-300">Initializing...</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- VIEW 2: ACTIVE 1v1 STADIUM ARENA                                      -->
+  <!-- ===================================================================== -->
+  <main id="gameView" class="hidden max-w-7xl mx-auto px-3 sm:px-5 py-3 sm:py-4 space-y-3.5">
+
+    <!-- Top Strip: Opponent Hand, Boosters, Team OVR Balance & Starting GK -->
+    <section class="rounded-2xl bg-slate-900/85 border border-white/10 px-3 sm:px-4 py-2.5">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <span id="oppTurnIndicator" class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
+          <span id="oppLabelName" class="font-display font-bold text-sm sm:text-base text-rose-300 uppercase tracking-wide">OPPONENT</span>
+          <span id="oppRoleBadge" class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-slate-800 text-slate-300 border border-white/10">DEFENDING</span>
+          <span id="teamBalanceHudBadge" class="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-400/30">BALANCED XI</span>
+        </div>
+
+        <!-- Opponent Booster Gauge + Visible GK Info -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          <div id="oppGkMiniBadge" onclick="inspectOpponentGk()" class="cursor-pointer px-2.5 py-1 rounded-lg bg-purple-950/60 hover:bg-purple-900/70 border border-purple-400/35 text-[10px] sm:text-xs font-mono text-purple-200 flex items-center gap-1.5 transition" title="Click to inspect Opponent GK stats">
+            <span>🧤</span>
+            <span id="oppGkSummaryText">GK</span>
+          </div>
+          <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 border border-amber-400/30">
+            <span class="text-[10px] font-mono font-bold text-amber-300">⚡ <span id="oppBoosterCount">0</span>/10</span>
+            <div id="oppBoosterPips" class="hidden sm:flex items-center gap-0.5"></div>
+          </div>
+        </div>
+      </div>
+      <!-- 11 Face-Down Cards Row -->
+      <div id="oppHandRow" class="flex items-center gap-1.5 sm:gap-2 overflow-x-auto thin-scroll pb-1"></div>
+    </section>
+
+    <!-- Center Floodlit Tactical Pitch & Duel Arena -->
+    <section class="pitch-surface rounded-3xl p-3.5 sm:p-5 relative overflow-hidden">
+      <!-- Pitch Markings SVG -->
+      <svg class="absolute inset-0 w-full h-full opacity-20 pointer-events-none" preserveAspectRatio="none" viewBox="0 0 1000 420">
+        <rect x="18" y="18" width="964" height="384" fill="none" stroke="#a7f3d0" stroke-width="2.5" rx="8"/>
+        <line x1="500" y1="18" x2="500" y2="402" stroke="#a7f3d0" stroke-width="2"/>
+        <circle cx="500" cy="210" r="68" fill="none" stroke="#a7f3d0" stroke-width="2"/>
+        <circle cx="500" cy="210" r="5" fill="#a7f3d0"/>
+        <rect x="18" y="100" width="125" height="220" fill="none" stroke="#a7f3d0" stroke-width="2"/>
+        <rect x="857" y="100" width="125" height="220" fill="none" stroke="#a7f3d0" stroke-width="2"/>
+        <rect x="18" y="145" width="48" height="130" fill="none" stroke="#a7f3d0" stroke-width="2"/>
+        <rect x="934" y="145" width="48" height="130" fill="none" stroke="#a7f3d0" stroke-width="2"/>
+      </svg>
+
+      <!-- Animated Pitch Radar & 4 Progressive Zones -->
+      <div class="relative z-10 mb-4 space-y-2">
+        <!-- Animated Ball Progress Track -->
+        <div class="relative h-6 rounded-full bg-slate-950/75 border border-emerald-400/25 overflow-hidden px-3 flex items-center">
+          <div class="w-full h-1 bg-slate-800 rounded-full relative">
+            <div id="radarProgressFill" class="h-full rounded-full bg-gradient-to-r from-emerald-500 via-amber-400 to-rose-500 transition-all duration-500" style="width: 12%"></div>
+            <div id="radarBallMarker" class="radar-ball absolute top-1/2 w-5 h-5 rounded-full bg-amber-300 border-2 border-slate-950 flex items-center justify-center text-[11px]" style="left: 12%">⚽</div>
+          </div>
+          <span class="ml-2 text-[10px] font-mono font-bold text-amber-300 shrink-0">🥅 GOAL</span>
+        </div>
+
+        <div class="grid grid-cols-4 gap-1.5 sm:gap-2.5">
+          <div id="zone1" class="zone-pill rounded-xl px-2 py-1.5 border text-center transition-all">
+            <div class="text-[9px] sm:text-[10px] font-mono font-bold uppercase">Zone 1</div>
+            <div class="text-[10px] sm:text-xs font-display font-bold truncate">High Press</div>
+            <div class="text-[9px] text-slate-300/80 hidden sm:block">SPD vs ATT DEF</div>
+          </div>
+          <div id="zone2" class="zone-pill rounded-xl px-2 py-1.5 border text-center transition-all">
+            <div class="text-[9px] sm:text-[10px] font-mono font-bold uppercase">Zone 2</div>
+            <div class="text-[10px] sm:text-xs font-display font-bold truncate">Midfield</div>
+            <div class="text-[9px] text-slate-300/80 hidden sm:block">DRI vs MID DEF</div>
+          </div>
+          <div id="zone3" class="zone-pill rounded-xl px-2 py-1.5 border text-center transition-all">
+            <div class="text-[9px] sm:text-[10px] font-mono font-bold uppercase">Zone 3</div>
+            <div class="text-[10px] sm:text-xs font-display font-bold truncate">Edge of Box</div>
+            <div class="text-[9px] text-slate-300/80 hidden sm:block">CTL vs DEF DEF</div>
+          </div>
+          <div id="zone4" class="zone-pill rounded-xl px-2 py-1.5 border text-center transition-all">
+            <div class="text-[9px] sm:text-[10px] font-mono font-bold uppercase">Zone 4</div>
+            <div class="text-[10px] sm:text-xs font-display font-bold truncate">Close to Goal</div>
+            <div class="text-[9px] text-slate-300/80 hidden sm:block">FIN+PWR vs GK</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status Prompt Banner -->
+      <div class="relative z-10 text-center mb-3.5">
+        <div id="arenaPromptBadge" class="inline-flex flex-wrap items-center justify-center gap-2 px-4 py-1.5 rounded-full bg-slate-950/92 border border-amber-400/45 text-xs sm:text-sm font-bold text-amber-300 shadow-lg">
+          Preparing Kick-off...
+        </div>
+      </div>
+
+      <!-- Main Duel Stage (Attacker Card vs Center Clash/Controls vs Defender Card) -->
+      <div class="relative z-10 grid grid-cols-1 md:grid-cols-12 gap-4 items-center min-h-[265px]">
+        <!-- Left Side: Attacking Slot -->
+        <div class="md:col-span-4 flex flex-col items-center">
+          <div class="text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-300 mb-1.5 flex items-center gap-1.5">
+            <span>⚔️ ATTACKING</span>
+            <span id="arenaAttOwner" class="text-slate-300"></span>
+          </div>
+          <div id="arenaAttSlot" class="w-[164px] sm:w-[184px] min-h-[252px] rounded-2xl border-2 border-dashed border-emerald-400/35 bg-slate-950/55 flex flex-col items-center justify-center p-2 text-center">
+            <span class="text-3xl opacity-50 mb-1">⚽</span>
+            <span class="text-xs text-slate-400 font-semibold">Pick Outfield Card</span>
+          </div>
+        </div>
+
+        <!-- Center Clash Board, Booster Spender & Action Controls -->
+        <div class="md:col-span-4 flex flex-col items-center justify-center space-y-2.5">
+          <!-- Clash Result Display (Shown during Clash) -->
+          <div id="clashScorePanel" class="hidden w-full rounded-2xl bg-slate-950/95 border border-white/15 p-3.5 shadow-2xl text-center">
+            <div id="clashHeadline" class="font-display font-bold text-xl sm:text-2xl tracking-wide uppercase mb-1">GOAL!</div>
+            <div id="clashDetail" class="text-xs text-slate-300 mb-2.5 leading-snug"></div>
+
+            <!-- Tug-of-war Stat Bar OR Long-Shot 3-Check Breakdown -->
+            <div id="clashBreakdownArea" class="space-y-1.5"></div>
+          </div>
+
+          <!-- Pre-Clash VS Orb & Duel Rule Hint -->
+          <div id="vsOrbPanel" class="flex flex-col items-center w-full">
+            <div class="w-14 h-14 rounded-full bg-gradient-to-br from-amber-400 via-orange-500 to-rose-600 flex items-center justify-center shadow-xl shadow-amber-500/30 border-2 border-amber-200/60 font-display font-bold text-xl text-slate-950">
+              VS
+            </div>
+            <div id="duelRuleHint" class="mt-2 px-3 py-1 rounded-lg bg-slate-950/85 border border-white/10 text-[11px] font-mono text-amber-200 text-center">
+              Carrier SPD vs Opp ATT DEF
+            </div>
+          </div>
+
+          <!-- Live Booster Spender Panel (Shown when active player is making a choice) -->
+          <div id="boosterSpenderPanel" class="hidden w-full rounded-2xl bg-slate-950/92 border border-amber-400/40 p-2.5 shadow-lg">
+            <div class="flex items-center justify-between text-[11px] font-mono mb-1.5">
+              <span class="font-bold text-amber-300">⚡ SPEND BOOSTERS</span>
+              <span id="boosterEffectPreview" class="text-emerald-300 font-extrabold">+0 STATS</span>
+            </div>
+            <div class="flex items-center justify-between gap-1.5">
+              <button onclick="adjustPendingBoost(-1)" class="btn-action w-9 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 border border-white/15 font-mono font-extrabold text-white text-base">-</button>
+              <div class="flex-1 text-center font-mono font-extrabold text-sm text-white bg-slate-900 py-1 rounded-lg border border-white/10">
+                <span id="pendingBoostVal" class="text-amber-300">0</span>
+                <span class="text-slate-500 text-xs"> / <span id="availBoostMax">0</span></span>
+              </div>
+              <button onclick="adjustPendingBoost(1)" class="btn-action w-9 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 border border-white/15 font-mono font-extrabold text-white text-base">+</button>
+              <button onclick="setMaxPendingBoost()" class="btn-action px-2.5 h-8 rounded-lg bg-amber-500/20 hover:bg-amber-500/35 border border-amber-400/45 font-mono font-extrabold text-[11px] text-amber-300">MAX</button>
+            </div>
+          </div>
+
+          <!-- Live Long-Shot Feasibility Preview (Shown when attacking in Zone 1, 2, or 3 with a carrier) -->
+          <div id="longShotPreviewPanel" class="hidden w-full rounded-2xl bg-slate-950/92 border border-rose-400/35 p-2.5 text-[10px] sm:text-[11px] font-mono space-y-1">
+            <div class="flex items-center justify-between">
+              <span class="font-bold text-rose-300 uppercase">🎯 Long-Shot Check vs <span id="lsGkName">GK</span></span>
+              <span id="lsOverallVerdict" class="px-1.5 py-0.5 rounded font-extrabold text-[9px]"></span>
+            </div>
+            <div id="lsChecksList" class="space-y-0.5 text-[10px]"></div>
+          </div>
+
+          <!-- Interactive Action Buttons -->
+          <div id="arenaActions" class="flex flex-wrap items-center justify-center gap-2 w-full"></div>
+        </div>
+
+        <!-- Right Side: Defending Slot -->
+        <div class="md:col-span-4 flex flex-col items-center">
+          <div class="text-[11px] font-mono font-bold uppercase tracking-wider text-rose-300 mb-1.5 flex items-center gap-1.5">
+            <span>🛡️ DEFENDING</span>
+            <span id="arenaDefOwner" class="text-slate-300"></span>
+          </div>
+          <div id="arenaDefSlot" class="w-[164px] sm:w-[184px] min-h-[252px] rounded-2xl border-2 border-dashed border-rose-400/35 bg-slate-950/55 flex flex-col items-center justify-center p-2 text-center">
+            <span class="text-3xl opacity-50 mb-1">🛡️</span>
+            <span class="text-xs text-slate-400 font-semibold">Awaiting Counter</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Commentary Ticker -->
+      <div class="relative z-10 mt-4 pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <span class="px-2 py-0.5 rounded bg-amber-500/20 border border-amber-400/30 text-amber-300 font-mono font-bold text-[10px] shrink-0">LIVE</span>
+          <p id="latestCommentary" class="text-xs sm:text-sm text-slate-200 truncate">Welcome to PITCH CLASH XI! Both balanced 4-4-2 squads are on the pitch.</p>
+        </div>
+        <button onclick="toggleCommentaryDrawer()" class="text-[11px] font-semibold text-cyan-300 hover:text-cyan-200 shrink-0 underline underline-offset-2">
+          Match Log
+        </button>
+      </div>
+      <div id="commentaryDrawer" class="hidden relative z-10 mt-2 max-h-40 overflow-y-auto thin-scroll rounded-xl bg-slate-950/92 border border-white/10 p-2.5 space-y-1.5 text-xs"></div>
+    </section>
+
+    <!-- Bottom Strip: Your 11-Card Squad Hand & Stackable Booster Gauge -->
+    <section class="rounded-2xl bg-slate-900/90 border border-white/15 p-3 sm:p-4 shadow-xl">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+        <div class="flex flex-wrap items-center gap-2">
+          <span id="myLabelName" class="font-display font-bold text-base sm:text-lg text-emerald-400 uppercase tracking-wide">YOUR XI</span>
+          <span id="myRoleBadge" class="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">ATTACKING</span>
+
+          <!-- My Stackable Booster Gauge (0/10 with glowing pips) -->
+          <div class="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-slate-950 border border-amber-400/40 shadow-inner">
+            <span class="text-xs font-mono font-extrabold text-amber-300">⚡ <span id="myBoosterCount">0</span>/10</span>
+            <div id="myBoosterPips" class="flex items-center gap-1"></div>
+          </div>
+        </div>
+
+        <!-- Position Filter Tabs -->
+        <div id="myFilterTabs" class="flex flex-wrap items-center gap-1.5 text-xs font-mono"></div>
+      </div>
+
+      <!-- Helper Hint for Pass / Carrier -->
+      <div id="handHelperBar" class="hidden mb-2 px-3 py-1.5 rounded-xl bg-cyan-950/50 border border-cyan-400/30 text-[11px] text-cyan-200 font-medium"></div>
+
+      <!-- Playable Hand Strip -->
+      <div id="myHandContainer" class="flex items-stretch gap-3 overflow-x-auto thin-scroll pb-2 pt-2 px-1"></div>
+    </section>
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: PLAYER FULL STAT INSPECTOR                                     -->
+  <!-- ===================================================================== -->
+  <div id="inspectorModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) closeInspectorModal()">
+    <div class="w-full max-w-lg rounded-3xl bg-slate-900 border border-white/15 p-5 sm:p-6 shadow-2xl relative">
+      <button onclick="closeInspectorModal()" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center font-bold">✕</button>
+      <div id="inspectorContent"></div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: LOCAL 1v1 PASS & PLAY PRIVACY VEIL                             -->
+  <!-- ===================================================================== -->
+  <div id="privacyVeilModal" class="hidden fixed inset-0 z-50 bg-slate-950/96 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="max-w-md w-full rounded-3xl bg-slate-900 border border-amber-400/45 p-7 text-center shadow-2xl space-y-4">
+      <div class="text-5xl">🔒</div>
+      <h3 id="privacyVeilTitle" class="font-display font-bold text-2xl text-amber-300 uppercase">Pass Device to Player 2</h3>
+      <p id="privacyVeilSub" class="text-sm text-slate-300">Keep your squad and booster spend hidden! Tap below when ready.</p>
+      <button onclick="dismissPrivacyVeil()" class="btn-action w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-extrabold uppercase tracking-wide">
+        I'm Ready — Reveal My XI
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: HOW TO PLAY / RULES                                            -->
+  <!-- ===================================================================== -->
+  <div id="rulesModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4" onclick="if(event.target===this) closeRulesModal()">
+    <div class="w-full max-w-2xl rounded-3xl bg-slate-900 border border-white/15 p-5 sm:p-7 shadow-2xl max-h-[88vh] overflow-y-auto thin-scroll space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-display font-bold text-2xl text-amber-300 uppercase">📖 Pitch Clash XI — Official Rules</h3>
+        <button onclick="closeRulesModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold">✕</button>
+      </div>
+      <div class="space-y-3 text-sm text-slate-300 leading-relaxed">
+        <div class="p-3.5 rounded-xl bg-slate-950/85 border border-white/10">
+          <h4 class="font-bold text-white mb-1">1. Balanced 4-4-2 Squads & 6 Outfield Stats</h4>
+          <p>Both managers receive 11 unique world-class cards: <strong>2 ATT, 4 MID, 4 DEF, and 1 GK</strong>, automatically balanced within <strong>≤ 0.6 OVR</strong>. Outfield cards have <strong>6 stats</strong> (<code>SPD, DRI, CTL, FIN, PWR, DEF</code>); Goalkeepers have <strong>3 stats</strong> (<code>DIV, HND, SAV</code>). First to <strong>3 Goals</strong> (or 5 Goals) wins!</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-950/85 border border-white/10">
+          <h4 class="font-bold text-white mb-1">2. Pitch Zones & "Anyone Can Score"</h4>
+          <p class="mb-1.5"><strong>Any outfield card (ATT, MID, or DEF)</strong> can carry the ball, advance, pass to a teammate in Zones 2–4, and score!</p>
+          <ul class="list-disc pl-5 space-y-1">
+            <li><strong class="text-amber-300">Zone 1 — High Press:</strong> Carrier <strong>SPD</strong> vs Opp ATT <strong>DEF</strong> (Opp picks from 2 ATTs).</li>
+            <li><strong class="text-cyan-300">Zone 2 — Midfield:</strong> Carrier <strong>DRI</strong> vs Opp MID <strong>DEF</strong> (Opp picks from 4 MIDs).</li>
+            <li><strong class="text-blue-300">Zone 3 — Edge of Box:</strong> Carrier <strong>CTL</strong> vs Opp DEF <strong>DEF</strong> (Opp picks from 4 DEFs).</li>
+            <li><strong class="text-emerald-300">Zone 4 — Close to Goal:</strong> Carrier <strong>FIN + PWR</strong> vs GK <strong>DIV + SAV</strong> (Tiebreaker: Carrier <code>CTL</code> &gt; GK <code>HND</code>).</li>
+          </ul>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-950/85 border border-white/10">
+          <h4 class="font-bold text-rose-300 mb-1">3. Long-Distance Shots (From Zone 1, 2, or 3!)</h4>
+          <p>At any zone before the box, fire a <strong>⚡ LONG SHOT</strong> directly at the Opponent GK! It scores ONLY if ALL THREE conditions are met (with Stamina & Boosters applied):</p>
+          <ul class="list-disc pl-5 space-y-1 mt-1 font-mono text-xs text-amber-200">
+            <li>Carrier PWR ≥ GK SAV + 5</li>
+            <li>Carrier FIN ≥ GK DIV + 5</li>
+            <li>Carrier PWR ≥ GK HND + 5</li>
+          </ul>
+          <p class="text-xs text-slate-400 mt-1.5">Long Shots cost <strong>-28% stamina</strong>. If saved, the opponent wins the ball (+1 Stat Booster) and your shooter is locked next turn!</p>
+        </div>
+        <div class="p-3.5 rounded-xl bg-slate-950/85 border border-white/10">
+          <h4 class="font-bold text-amber-300 mb-1">4. Stat Boosters (Stack up to 10), Stamina & Lockouts</h4>
+          <ul class="list-disc pl-5 space-y-1">
+            <li><strong>⚡ Stat Boosters:</strong> Every time you win the ball (tackle, intercept, or GK save), earn <strong>+1 Booster</strong> (stack up to 10). Each Booster spent adds <strong>+2 to all stats</strong> for that duel (up to +20!).</li>
+            <li><strong>🔋 Live Stamina:</strong> Starts at 100%. Standard duel costs <strong>-22%</strong>, Long Shot costs <strong>-28%</strong>, resting recovers <strong>+15%</strong> per duel! Penalties: 70–100% (0), 45–69% (-3), 20–44% (-6), &lt;20% (-10).</li>
+            <li><strong>🔒 Defeated Lockout:</strong> Any outfield card that loses a duel is <strong>LOCKED for 1 turn</strong> (GK is exempt; oldest locked card auto-unlocks if an entire line is locked).</li>
+          </ul>
+        </div>
+      </div>
+      <div class="pt-2 text-right">
+        <button onclick="closeRulesModal()" class="btn-action px-6 py-2.5 rounded-xl bg-amber-400 text-slate-950 font-extrabold text-sm">Got It — Kick Off!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: GOAL CELEBRATION OVERLAY                                       -->
+  <!-- ===================================================================== -->
+  <div id="goalOverlay" class="hidden fixed inset-0 z-50 pointer-events-none flex items-center justify-center bg-amber-500/15 backdrop-blur-[2px]">
+    <div class="animate-goal-burst text-center px-8 py-6 rounded-3xl bg-slate-950/92 border-2 border-amber-400 shadow-[0_0_80px_rgba(245,158,11,0.75)]">
+      <div id="goalEmoji" class="text-5xl sm:text-6xl mb-1">⚽🔥</div>
+      <div id="goalMainTitle" class="font-display font-bold text-4xl sm:text-6xl tracking-widest bg-gradient-to-r from-amber-300 via-yellow-100 to-emerald-300 bg-clip-text text-transparent">
+        GOAL!!!
+      </div>
+      <div id="goalScorerBanner" class="text-sm sm:text-base font-bold text-white uppercase tracking-wider mt-1"></div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: MATCH SUMMARY / FULL TIME                                      -->
+  <!-- ===================================================================== -->
+  <div id="matchOverModal" class="hidden fixed inset-0 z-50 bg-slate-950/92 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="w-full max-w-lg rounded-3xl bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-amber-400/50 p-6 sm:p-7 text-center shadow-2xl space-y-5">
+      <div id="matchOverTrophy" class="text-6xl">🏆</div>
+      <div>
+        <div class="text-xs font-mono uppercase tracking-widest text-amber-400 font-bold">Full Time</div>
+        <h3 id="matchOverHeadline" class="font-display font-bold text-3xl sm:text-4xl text-white uppercase mt-1">VICTORY!</h3>
+      </div>
+      <div class="flex items-center justify-center gap-6 py-4 rounded-2xl bg-slate-950 border border-white/10">
+        <div>
+          <div id="endP1Name" class="text-xs font-bold text-emerald-400 uppercase">P1</div>
+          <div id="endP1Score" class="font-mono font-extrabold text-4xl text-white">0</div>
+        </div>
+        <div class="font-display text-2xl text-slate-600">VS</div>
+        <div>
+          <div id="endP2Name" class="text-xs font-bold text-rose-400 uppercase">P2</div>
+          <div id="endP2Score" class="font-mono font-extrabold text-4xl text-white">0</div>
+        </div>
+      </div>
+      <div id="matchStatsSummary" class="grid grid-cols-3 gap-2 text-xs font-mono"></div>
+      <div class="flex flex-col sm:flex-row gap-3 pt-2">
+        <button onclick="triggerRematch()" class="btn-action flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-extrabold uppercase text-sm">
+          🔄 Rematch (Fresh 4-4-2)
+        </button>
+        <button onclick="exitToLobby()" class="btn-action flex-1 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 border border-white/15 text-slate-200 font-bold uppercase text-sm">
+          🏠 Back to Lobby
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL: CONFIRM EXIT (Custom UI - Zero browser confirm/alert)          -->
+  <!-- ===================================================================== -->
+  <div id="exitConfirmModal" class="hidden fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="max-w-sm w-full rounded-2xl bg-slate-900 border border-white/15 p-6 text-center space-y-4 shadow-2xl">
+      <h3 class="font-display font-bold text-xl text-white">Leave Current Match?</h3>
+      <p class="text-sm text-slate-400">You will return to the main stadium lobby.</p>
+      <div class="flex gap-3">
+        <button onclick="closeExitConfirm()" class="flex-1 py-2.5 rounded-xl bg-slate-800 text-slate-200 font-semibold text-sm">Stay</button>
+        <button onclick="exitToLobby()" class="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm">Leave Match</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN GAME ENGINE + FIREBASE REAL-TIME MULTIPLAYER MODULE              -->
+  <!-- ===================================================================== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    /* =========================================================================
+       1. WORLD-CLASS FOOTBALLER DATABASE (52 REAL STARS)
+       - Outfield (ATT, MID, DEF): EXACTLY 6 STATS -> spd, dri, ctl, fin, pwr, def
+       - Goalkeepers (GK): EXACTLY 3 STATS -> div, hnd, sav
+    ========================================================================= */
+    const PLAYERS_DB = [
+      // ==================== 12 ATTACKERS (ATT) ====================
+      { id: "mbappe", name: "Kylian Mbappé", searchName: "Kylian Mbappe", pos: "ATT", ovr: 93, flag: "🇫🇷", nat: "FRA", club: "RMA", num: 9, colors: ["#f8fafc", "#dc2626", "#f59e0b"], stats: { spd: 97, dri: 94, ctl: 92, fin: 94, pwr: 93, def: 58 } },
+      { id: "haaland", name: "Erling Haaland", searchName: "Erling Haaland", pos: "ATT", ovr: 93, flag: "🇳🇴", nat: "NOR", club: "MCI", num: 9, colors: ["#38bdf8", "#0284c7", "#fef08a"], stats: { spd: 91, dri: 83, ctl: 86, fin: 96, pwr: 96, def: 74 } },
+      { id: "vinicius", name: "Vinícius Jr.", searchName: "Vinicius Junior", pos: "ATT", ovr: 92, flag: "🇧🇷", nat: "BRA", club: "RMA", num: 7, colors: ["#fbbf24", "#16a34a", "#f8fafc"], stats: { spd: 96, dri: 96, ctl: 94, fin: 89, pwr: 88, def: 64 } },
+      { id: "salah", name: "Mohamed Salah", searchName: "Mohamed Salah", pos: "ATT", ovr: 91, flag: "🇪🇬", nat: "EGY", club: "LIV", num: 11, colors: ["#dc2626", "#991b1b", "#fbbf24"], stats: { spd: 91, dri: 91, ctl: 91, fin: 93, pwr: 90, def: 70 } },
+      { id: "kane", name: "Harry Kane", searchName: "Harry Kane", pos: "ATT", ovr: 91, flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", nat: "ENG", club: "BAY", num: 9, colors: ["#dc2626", "#1e3a8a", "#f8fafc"], stats: { spd: 79, dri: 85, ctl: 91, fin: 96, pwr: 95, def: 79 } },
+      { id: "messi", name: "Lionel Messi", searchName: "Lionel Messi", pos: "ATT", ovr: 91, flag: "🇦🇷", nat: "ARG", club: "MIA", num: 10, colors: ["#f472b6", "#38bdf8", "#fde047"], stats: { spd: 82, dri: 96, ctl: 97, fin: 95, pwr: 89, def: 56 } },
+      { id: "lautaro", name: "Lautaro Martínez", searchName: "Lautaro Martinez", pos: "ATT", ovr: 90, flag: "🇦🇷", nat: "ARG", club: "INT", num: 10, colors: ["#1d4ed8", "#0f172a", "#38bdf8"], stats: { spd: 87, dri: 88, ctl: 89, fin: 92, pwr: 91, def: 82 } },
+      { id: "lewandowski", name: "R. Lewandowski", searchName: "Robert Lewandowski", pos: "ATT", ovr: 90, flag: "🇵🇱", nat: "POL", club: "BAR", num: 9, colors: ["#be123c", "#1d4ed8", "#fbbf24"], stats: { spd: 80, dri: 85, ctl: 90, fin: 95, pwr: 93, def: 74 } },
+      { id: "yamal", name: "Lamine Yamal", searchName: "Lamine Yamal", pos: "ATT", ovr: 90, flag: "🇪🇸", nat: "ESP", club: "BAR", num: 19, colors: ["#2563eb", "#dc2626", "#facc15"], stats: { spd: 92, dri: 95, ctl: 94, fin: 87, pwr: 86, def: 67 } },
+      { id: "saka", name: "Bukayo Saka", searchName: "Bukayo Saka", pos: "ATT", ovr: 90, flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", nat: "ENG", club: "ARS", num: 7, colors: ["#ef4444", "#ffffff", "#fbbf24"], stats: { spd: 89, dri: 92, ctl: 91, fin: 88, pwr: 88, def: 78 } },
+      { id: "griezmann", name: "A. Griezmann", searchName: "Antoine Griezmann", pos: "ATT", ovr: 89, flag: "🇫🇷", nat: "FRA", club: "ATM", num: 7, colors: ["#ef4444", "#1d4ed8", "#f8fafc"], stats: { spd: 83, dri: 89, ctl: 91, fin: 90, pwr: 87, def: 83 } },
+      { id: "osimhen", name: "Victor Osimhen", searchName: "Victor Osimhen", pos: "ATT", ovr: 89, flag: "🇳🇬", nat: "NGA", club: "GAL", num: 9, colors: ["#ea580c", "#dc2626", "#facc15"], stats: { spd: 92, dri: 84, ctl: 85, fin: 90, pwr: 92, def: 77 } },
+
+      // ==================== 16 MIDFIELDERS (MID) ====================
+      { id: "rodri", name: "Rodri", searchName: "Rodri", pos: "MID", ovr: 93, flag: "🇪🇸", nat: "ESP", club: "MCI", num: 16, colors: ["#0ea5e9", "#0f172a", "#facc15"], stats: { spd: 76, dri: 86, ctl: 92, fin: 84, pwr: 92, def: 93 } },
+      { id: "bellingham", name: "Jude Bellingham", searchName: "Jude Bellingham", pos: "MID", ovr: 92, flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", nat: "ENG", club: "RMA", num: 5, colors: ["#f8fafc", "#06b6d4", "#fbbf24"], stats: { spd: 85, dri: 91, ctl: 92, fin: 89, pwr: 89, def: 87 } },
+      { id: "debruyne", name: "Kevin De Bruyne", searchName: "Kevin De Bruyne", pos: "MID", ovr: 91, flag: "🇧🇪", nat: "BEL", club: "MCI", num: 17, colors: ["#38bdf8", "#1e3a8a", "#fbbf24"], stats: { spd: 78, dri: 88, ctl: 93, fin: 88, pwr: 94, def: 78 } },
+      { id: "valverde", name: "Fede Valverde", searchName: "Federico Valverde", pos: "MID", ovr: 91, flag: "🇺🇾", nat: "URU", club: "RMA", num: 8, colors: ["#38bdf8", "#f8fafc", "#10b981"], stats: { spd: 91, dri: 86, ctl: 89, fin: 86, pwr: 95, def: 90 } },
+      { id: "pedri", name: "Pedri", searchName: "Pedri", pos: "MID", ovr: 90, flag: "🇪🇸", nat: "ESP", club: "BAR", num: 8, colors: ["#2563eb", "#be123c", "#facc15"], stats: { spd: 83, dri: 93, ctl: 95, fin: 81, pwr: 82, def: 84 } },
+      { id: "wirtz", name: "Florian Wirtz", searchName: "Florian Wirtz", pos: "MID", ovr: 90, flag: "🇩🇪", nat: "GER", club: "LEV", num: 10, colors: ["#ef4444", "#0f172a", "#facc15"], stats: { spd: 86, dri: 94, ctl: 94, fin: 87, pwr: 85, def: 78 } },
+      { id: "musiala", name: "Jamal Musiala", searchName: "Jamal Musiala", pos: "MID", ovr: 90, flag: "🇩🇪", nat: "GER", club: "BAY", num: 42, colors: ["#dc2626", "#f8fafc", "#facc15"], stats: { spd: 88, dri: 95, ctl: 94, fin: 87, pwr: 84, def: 79 } },
+      { id: "odegaard", name: "M. Ødegaard", searchName: "Martin Odegaard", pos: "MID", ovr: 90, flag: "🇳🇴", nat: "NOR", club: "ARS", num: 8, colors: ["#ef4444", "#ffffff", "#fbbf24"], stats: { spd: 81, dri: 91, ctl: 94, fin: 86, pwr: 86, def: 78 } },
+      { id: "rice", name: "Declan Rice", searchName: "Declan Rice", pos: "MID", ovr: 90, flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", nat: "ENG", club: "ARS", num: 41, colors: ["#dc2626", "#f8fafc", "#38bdf8"], stats: { spd: 82, dri: 83, ctl: 87, fin: 79, pwr: 88, def: 93 } },
+      { id: "palmer", name: "Cole Palmer", searchName: "Cole Palmer", pos: "MID", ovr: 90, flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", nat: "ENG", club: "CHE", num: 20, colors: ["#2563eb", "#06b6d4", "#f8fafc"], stats: { spd: 84, dri: 91, ctl: 92, fin: 91, pwr: 89, def: 74 } },
+      { id: "foden", name: "Phil Foden", searchName: "Phil Foden", pos: "MID", ovr: 90, flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", nat: "ENG", club: "MCI", num: 47, colors: ["#38bdf8", "#0284c7", "#fbbf24"], stats: { spd: 86, dri: 93, ctl: 93, fin: 89, pwr: 89, def: 74 } },
+      { id: "bruno", name: "Bruno Fernandes", searchName: "Bruno Fernandes", pos: "MID", ovr: 89, flag: "🇵🇹", nat: "POR", club: "MUN", num: 8, colors: ["#dc2626", "#111827", "#facc15"], stats: { spd: 80, dri: 87, ctl: 90, fin: 88, pwr: 91, def: 80 } },
+      { id: "macallister", name: "A. Mac Allister", searchName: "Alexis Mac Allister", pos: "MID", ovr: 89, flag: "🇦🇷", nat: "ARG", club: "LIV", num: 10, colors: ["#dc2626", "#06b6d4", "#f8fafc"], stats: { spd: 79, dri: 87, ctl: 91, fin: 84, pwr: 89, def: 86 } },
+      { id: "barella", name: "Nicolò Barella", searchName: "Nicolo Barella", pos: "MID", ovr: 89, flag: "🇮🇹", nat: "ITA", club: "INT", num: 23, colors: ["#1d4ed8", "#0f172a", "#38bdf8"], stats: { spd: 84, dri: 89, ctl: 91, fin: 82, pwr: 85, def: 88 } },
+      { id: "modric", name: "Luka Modrić", searchName: "Luka Modric", pos: "MID", ovr: 89, flag: "🇭🇷", nat: "CRO", club: "RMA", num: 10, colors: ["#ef4444", "#2563eb", "#f8fafc"], stats: { spd: 76, dri: 91, ctl: 95, fin: 82, pwr: 85, def: 83 } },
+      { id: "camavinga", name: "E. Camavinga", searchName: "Eduardo Camavinga", pos: "MID", ovr: 88, flag: "🇫🇷", nat: "FRA", club: "RMA", num: 6, colors: ["#e2e8f0", "#3b82f6", "#10b981"], stats: { spd: 87, dri: 88, ctl: 89, fin: 76, pwr: 83, def: 91 } },
+
+      // ==================== 16 DEFENDERS (DEF) ====================
+      { id: "vandijk", name: "Virgil van Dijk", searchName: "Virgil van Dijk", pos: "DEF", ovr: 92, flag: "🇳🇱", nat: "NED", club: "LIV", num: 4, colors: ["#dc2626", "#f97316", "#f8fafc"], stats: { spd: 83, dri: 76, ctl: 85, fin: 70, pwr: 86, def: 95 } },
+      { id: "saliba", name: "William Saliba", searchName: "William Saliba", pos: "DEF", ovr: 91, flag: "🇫🇷", nat: "FRA", club: "ARS", num: 2, colors: ["#ef4444", "#1e3a8a", "#38bdf8"], stats: { spd: 86, dri: 79, ctl: 86, fin: 64, pwr: 80, def: 94 } },
+      { id: "rubendias", name: "Rúben Dias", searchName: "Ruben Dias", pos: "DEF", ovr: 91, flag: "🇵🇹", nat: "POR", club: "MCI", num: 3, colors: ["#38bdf8", "#0284c7", "#f8fafc"], stats: { spd: 78, dri: 74, ctl: 83, fin: 62, pwr: 82, def: 94 } },
+      { id: "rudiger", name: "Antonio Rüdiger", searchName: "Antonio Rudiger", pos: "DEF", ovr: 90, flag: "🇩🇪", nat: "GER", club: "RMA", num: 22, colors: ["#f8fafc", "#475569", "#6366f1"], stats: { spd: 87, dri: 75, ctl: 81, fin: 68, pwr: 90, def: 92 } },
+      { id: "bastoni", name: "A. Bastoni", searchName: "Alessandro Bastoni", pos: "DEF", ovr: 90, flag: "🇮🇹", nat: "ITA", club: "INT", num: 95, colors: ["#1d4ed8", "#0f172a", "#38bdf8"], stats: { spd: 81, dri: 81, ctl: 87, fin: 68, pwr: 81, def: 92 } },
+      { id: "gabriel", name: "Gabriel Magalhães", searchName: "Gabriel Magalhaes", pos: "DEF", ovr: 90, flag: "🇧🇷", nat: "BRA", club: "ARS", num: 6, colors: ["#ef4444", "#16a34a", "#facc15"], stats: { spd: 81, dri: 73, ctl: 81, fin: 72, pwr: 84, def: 93 } },
+      { id: "hakimi", name: "Achraf Hakimi", searchName: "Achraf Hakimi", pos: "DEF", ovr: 89, flag: "🇲🇦", nat: "MAR", club: "PSG", num: 2, colors: ["#1d4ed8", "#dc2626", "#f8fafc"], stats: { spd: 95, dri: 86, ctl: 86, fin: 79, pwr: 87, def: 85 } },
+      { id: "trent", name: "T. Alexander-Arnold", searchName: "Trent Alexander-Arnold", pos: "DEF", ovr: 89, flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", nat: "ENG", club: "LIV", num: 66, colors: ["#dc2626", "#991b1b", "#38bdf8"], stats: { spd: 81, dri: 84, ctl: 90, fin: 78, pwr: 90, def: 83 } },
+      { id: "theo", name: "Theo Hernández", searchName: "Theo Hernandez", pos: "DEF", ovr: 89, flag: "🇫🇷", nat: "FRA", club: "MIL", num: 19, colors: ["#dc2626", "#0f172a", "#f8fafc"], stats: { spd: 95, dri: 86, ctl: 85, fin: 79, pwr: 91, def: 87 } },
+      { id: "gvardiol", name: "Joško Gvardiol", searchName: "Josko Gvardiol", pos: "DEF", ovr: 89, flag: "🇭🇷", nat: "CRO", club: "MCI", num: 24, colors: ["#38bdf8", "#dc2626", "#f8fafc"], stats: { spd: 85, dri: 83, ctl: 86, fin: 76, pwr: 87, def: 90 } },
+      { id: "carvajal", name: "Dani Carvajal", searchName: "Dani Carvajal", pos: "DEF", ovr: 89, flag: "🇪🇸", nat: "ESP", club: "RMA", num: 2, colors: ["#f8fafc", "#3b82f6", "#f59e0b"], stats: { spd: 85, dri: 83, ctl: 86, fin: 75, pwr: 84, def: 90 } },
+      { id: "araujo", name: "Ronald Araújo", searchName: "Ronald Araujo", pos: "DEF", ovr: 89, flag: "🇺🇾", nat: "URU", club: "BAR", num: 4, colors: ["#2563eb", "#be123c", "#38bdf8"], stats: { spd: 89, dri: 74, ctl: 79, fin: 66, pwr: 83, def: 91 } },
+      { id: "walker", name: "Kyle Walker", searchName: "Kyle Walker", pos: "DEF", ovr: 88, flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", nat: "ENG", club: "MCI", num: 2, colors: ["#38bdf8", "#1e293b", "#fbbf24"], stats: { spd: 93, dri: 79, ctl: 81, fin: 68, pwr: 88, def: 87 } },
+      { id: "davies", name: "Alphonso Davies", searchName: "Alphonso Davies", pos: "DEF", ovr: 88, flag: "🇨🇦", nat: "CAN", club: "BAY", num: 19, colors: ["#dc2626", "#f8fafc", "#fbbf24"], stats: { spd: 96, dri: 87, ctl: 86, fin: 74, pwr: 83, def: 85 } },
+      { id: "frimpong", name: "Jeremie Frimpong", searchName: "Jeremie Frimpong", pos: "DEF", ovr: 88, flag: "🇳🇱", nat: "NED", club: "LEV", num: 30, colors: ["#ef4444", "#f97316", "#facc15"], stats: { spd: 96, dri: 88, ctl: 85, fin: 79, pwr: 82, def: 82 } },
+      { id: "grimaldo", name: "A. Grimaldo", searchName: "Alex Grimaldo", pos: "DEF", ovr: 88, flag: "🇪🇸", nat: "ESP", club: "LEV", num: 20, colors: ["#ef4444", "#0f172a", "#38bdf8"], stats: { spd: 87, dri: 87, ctl: 89, fin: 82, pwr: 88, def: 83 } },
+
+      // ==================== 8 GOALKEEPERS (GK) ====================
+      { id: "courtois", name: "Thibaut Courtois", searchName: "Thibaut Courtois", pos: "GK", ovr: 92, flag: "🇧🇪", nat: "BEL", club: "RMA", num: 1, colors: ["#a855f7", "#3b0764", "#facc15"], stats: { div: 91, hnd: 91, sav: 92 } },
+      { id: "alisson", name: "Alisson Becker", searchName: "Alisson", pos: "GK", ovr: 91, flag: "🇧🇷", nat: "BRA", club: "LIV", num: 1, colors: ["#10b981", "#065f46", "#facc15"], stats: { div: 90, hnd: 90, sav: 91 } },
+      { id: "donnarumma", name: "G. Donnarumma", searchName: "Gianluigi Donnarumma", pos: "GK", ovr: 90, flag: "🇮🇹", nat: "ITA", club: "PSG", num: 99, colors: ["#8b5cf6", "#1d4ed8", "#facc15"], stats: { div: 91, hnd: 86, sav: 91 } },
+      { id: "terstegen", name: "M. ter Stegen", searchName: "Marc-Andre ter Stegen", pos: "GK", ovr: 90, flag: "🇩🇪", nat: "GER", club: "BAR", num: 1, colors: ["#f59e0b", "#1e293b", "#a855f7"], stats: { div: 89, hnd: 89, sav: 90 } },
+      { id: "oblak", name: "Jan Oblak", searchName: "Jan Oblak", pos: "GK", ovr: 90, flag: "🇸🇮", nat: "SVN", club: "ATM", num: 13, colors: ["#7c3aed", "#1e1b4b", "#facc15"], stats: { div: 89, hnd: 91, sav: 91 } },
+      { id: "emimartinez", name: "Emi Martínez", searchName: "Emiliano Martinez", pos: "GK", ovr: 90, flag: "🇦🇷", nat: "ARG", club: "AVL", num: 23, colors: ["#9333ea", "#06b6d4", "#fde047"], stats: { div: 91, hnd: 87, sav: 90 } },
+      { id: "ederson", name: "Ederson", searchName: "Ederson", pos: "GK", ovr: 89, flag: "🇧🇷", nat: "BRA", club: "MCI", num: 31, colors: ["#a855f7", "#0c4a6e", "#facc15"], stats: { div: 89, hnd: 87, sav: 89 } },
+      { id: "maignan", name: "Mike Maignan", searchName: "Mike Maignan", pos: "GK", ovr: 89, flag: "🇫🇷", nat: "FRA", club: "MIL", num: 16, colors: ["#f59e0b", "#3b0764", "#f8fafc"], stats: { div: 90, hnd: 88, sav: 89 } },
+    ];
+
+    const PLAYER_MAP = new Map(PLAYERS_DB.map((p) => [p.id, p]));
+
+    /* =========================================================================
+       2. PLAYER PHOTO CACHE & THESPORTSDB FETCHER (WITH INSTANT SVG FALLBACK)
+    ========================================================================= */
+    const imageCache = new Map();
+    const imageFetchInFlight = new Set();
+    const fetchQueue = [];
+    let activeFetches = 0;
+
+    function queuePlayerImageFetch(playerId) {
+      if (imageCache.has(playerId) || imageFetchInFlight.has(playerId)) return;
+      const p = PLAYER_MAP.get(playerId);
+      if (!p) return;
+      imageFetchInFlight.add(playerId);
+      fetchQueue.push(p);
+      processFetchQueue();
+    }
+
+    async function processFetchQueue() {
+      if (activeFetches >= 3 || fetchQueue.length === 0) return;
+      const player = fetchQueue.shift();
+      activeFetches++;
+      try {
+        const res = await fetch(`https://www.thesportsdb.com/api/v1/json/3/searchplayers.php?p=${encodeURIComponent(player.searchName)}`);
+        if (res.ok) {
+          const data = await res.json();
+          const list = Array.isArray(data?.player) ? data.player : [];
+          const match = list.find((item) => (item.strSport || "").toLowerCase().includes("soccer")) || list[0];
+          const url = match?.strCutout || match?.strRender || match?.strThumb || match?.strFanart1 || null;
+          if (url) {
+            await preloadImage(url);
+            imageCache.set(player.id, url);
+            updateRenderedPlayerImages(player.id, url);
+          } else {
+            imageCache.set(player.id, null);
+          }
+        } else {
+          imageCache.set(player.id, null);
+        }
+      } catch (_err) {
+        imageCache.set(player.id, null);
+      } finally {
+        activeFetches--;
+        setTimeout(processFetchQueue, 110);
+      }
+    }
+
+    function preloadImage(url) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(url);
+        img.onerror = () => reject(new Error("img failed"));
+        img.src = url;
+      });
+    }
+
+    function updateRenderedPlayerImages(playerId, url) {
+      document.querySelectorAll(`img[data-player-img="${playerId}"]`).forEach((imgEl) => {
+        imgEl.src = url;
+        imgEl.classList.remove("opacity-0");
+        imgEl.classList.add("opacity-100");
+        const fallback = imgEl.parentElement?.querySelector(".svg-fallback");
+        if (fallback) fallback.classList.add("opacity-15");
+      });
+    }
+
+    /* =========================================================================
+       3. DYNAMIC ACTION-SILHOUETTE SVG PORTRAIT GENERATOR
+    ========================================================================= */
+    function getActionFootballerSVG(player) {
+      const [c1, c2, c3] = player.colors;
+      const posePaths = {
+        ATT: `
+          <circle cx="96" cy="38" r="14" fill="#e2e8f0" stroke="${c3}" stroke-width="2"/>
+          <path d="M84 54 L112 58 L122 95 L90 95 Z" fill="url(#kitGrad-${player.id})" stroke="#fff" stroke-opacity="0.35" stroke-width="1.5"/>
+          <path d="M84 60 L58 75 L64 83 L88 73 Z" fill="${c2}"/>
+          <path d="M110 62 L138 50 L142 60 L114 74 Z" fill="${c2}"/>
+          <path d="M90 95 L72 138 L85 142 L102 105 Z" fill="#0f172a"/>
+          <path d="M104 95 L132 126 L122 136 L98 107 Z" fill="#0f172a"/>
+          <circle cx="140" cy="133" r="10" fill="#fff" stroke="#0f172a" stroke-width="2"/>
+        `,
+        MID: `
+          <circle cx="100" cy="38" r="14" fill="#e2e8f0" stroke="${c3}" stroke-width="2"/>
+          <path d="M83 54 L117 54 L114 97 L86 97 Z" fill="url(#kitGrad-${player.id})" stroke="#fff" stroke-opacity="0.35" stroke-width="1.5"/>
+          <path d="M83 59 L58 83 L66 89 L86 71 Z" fill="${c2}"/>
+          <path d="M117 59 L142 73 L138 82 L114 71 Z" fill="${c2}"/>
+          <path d="M88 97 L76 140 L89 142 L99 105 Z" fill="#0f172a"/>
+          <path d="M104 97 L120 138 L108 142 L98 105 Z" fill="#0f172a"/>
+          <circle cx="62" cy="136" r="9.5" fill="#fff" stroke="#0f172a" stroke-width="2"/>
+        `,
+        DEF: `
+          <circle cx="100" cy="38" r="14.5" fill="#e2e8f0" stroke="${c3}" stroke-width="2"/>
+          <path d="M80 54 L120 54 L116 98 L84 98 Z" fill="url(#kitGrad-${player.id})" stroke="#fff" stroke-opacity="0.35" stroke-width="1.5"/>
+          <path d="M80 59 L58 85 L68 91 L85 72 Z" fill="${c2}"/>
+          <path d="M120 59 L142 85 L132 91 L115 72 Z" fill="${c2}"/>
+          <path d="M86 98 L72 141 L87 143 L98 106 Z" fill="#0f172a"/>
+          <path d="M104 98 L128 141 L113 143 L100 106 Z" fill="#0f172a"/>
+        `,
+        GK: `
+          <circle cx="94" cy="43" r="14" fill="#e2e8f0" stroke="${c3}" stroke-width="2"/>
+          <path d="M80 57 L114 65 L104 103 L74 95 Z" fill="url(#kitGrad-${player.id})" stroke="#fff" stroke-opacity="0.35" stroke-width="1.5"/>
+          <path d="M110 65 L146 41 L152 51 L116 77 Z" fill="${c2}"/>
+          <path d="M84 61 L126 31 L133 40 L92 71 Z" fill="${c2}"/>
+          <circle cx="148" cy="43" r="7" fill="${c3}" stroke="#0f172a" stroke-width="1.5"/>
+          <circle cx="131" cy="33" r="7" fill="${c3}" stroke="#0f172a" stroke-width="1.5"/>
+          <path d="M78 95 L52 132 L64 139 L90 103 Z" fill="#0f172a"/>
+          <path d="M92 99 L82 142 L95 144 L104 104 Z" fill="#0f172a"/>
+        `,
+      };
+
+      return `
+        <svg viewBox="0 0 200 160" class="w-full h-full object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.65)]">
+          <defs>
+            <linearGradient id="kitGrad-${player.id}" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="${c1}"/>
+              <stop offset="100%" stop-color="${c2}"/>
+            </linearGradient>
+            <radialGradient id="aura-${player.id}" cx="50%" cy="48%" r="52%">
+              <stop offset="0%" stop-color="${c3}" stop-opacity="0.46"/>
+              <stop offset="65%" stop-color="${c1}" stop-opacity="0.16"/>
+              <stop offset="100%" stop-color="${c2}" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <circle cx="100" cy="80" r="72" fill="url(#aura-${player.id})"/>
+          <path d="M12 130 L76 72 M188 30 L124 88 M22 50 L68 62 M178 122 L132 102" stroke="${c3}" stroke-opacity="0.35" stroke-width="3" stroke-linecap="round"/>
+          ${posePaths[player.pos] || posePaths.ATT}
+          <text x="100" y="84" text-anchor="middle" font-family="Chakra Petch, sans-serif" font-weight="700" font-size="20" fill="#ffffff" fill-opacity="0.92" stroke="#000000" stroke-opacity="0.45" stroke-width="0.8">${player.num}</text>
+        </svg>
+      `;
+    }
+
+    /* =========================================================================
+       4. WEB AUDIO API SYNTHESIZED MATCH SFX ENGINE
+    ========================================================================= */
+    let soundEnabled = true;
+    let audioCtx = null;
+
+    function getAudioContext() {
+      if (!soundEnabled) return null;
+      try {
+        if (!audioCtx) {
+          const Ctx = window.AudioContext || window.webkitAudioContext;
+          if (!Ctx) return null;
+          audioCtx = new Ctx();
+        }
+        if (audioCtx.state === "suspended") {
+          audioCtx.resume();
+        }
+        return audioCtx;
+      } catch (_e) {
+        return null;
+      }
+    }
+
+    function playTone(ctx, freq, startOffset, duration, type = "sine", gainVal = 0.14, freqEnd = null) {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      const now = ctx.currentTime + startOffset;
+      osc.frequency.setValueAtTime(freq, now);
+      if (freqEnd) osc.frequency.exponentialRampToValueAtTime(freqEnd, now + duration);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.linearRampToValueAtTime(gainVal, now + 0.012);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + duration + 0.02);
+    }
+
+    function playNoiseBurst(ctx, startOffset, duration, gainVal = 0.12, filterFreq = 900) {
+      const sampleRate = ctx.sampleRate;
+      const length = Math.floor(sampleRate * duration);
+      const buffer = ctx.createBuffer(1, length, sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < length; i++) data[i] = Math.random() * 2 - 1;
+      const src = ctx.createBufferSource();
+      src.buffer = buffer;
+
+      const filter = ctx.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.frequency.value = filterFreq;
+
+      const gain = ctx.createGain();
+      const now = ctx.currentTime + startOffset;
+      gain.gain.setValueAtTime(0.001, now);
+      gain.gain.linearRampToValueAtTime(gainVal, now + 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+      src.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      src.start(now);
+      src.stop(now + duration + 0.05);
+    }
+
+    function playSfx(type) {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      try {
+        if (type === "select") {
+          playTone(ctx, 560, 0, 0.06, "triangle", 0.09, 720);
+        } else if (type === "booster") {
+          playTone(ctx, 660, 0, 0.09, "sine", 0.11);
+          playTone(ctx, 880, 0.07, 0.11, "sine", 0.12);
+          playTone(ctx, 1175, 0.14, 0.16, "triangle", 0.12);
+        } else if (type === "kick") {
+          playTone(ctx, 150, 0, 0.14, "sine", 0.24, 42);
+          playNoiseBurst(ctx, 0, 0.07, 0.09, 1200);
+        } else if (type === "save") {
+          playTone(ctx, 120, 0, 0.16, "triangle", 0.22, 55);
+          playNoiseBurst(ctx, 0.01, 0.1, 0.12, 650);
+        } else if (type === "winDuel") {
+          playTone(ctx, 523.25, 0, 0.1, "triangle", 0.11);
+          playTone(ctx, 659.25, 0.08, 0.14, "triangle", 0.12);
+        } else if (type === "whistle") {
+          playTone(ctx, 2750, 0, 0.14, "sine", 0.09, 2950);
+          playTone(ctx, 2850, 0.18, 0.22, "sine", 0.1, 2650);
+        } else if (type === "goal") {
+          playTone(ctx, 523.25, 0, 0.16, "sawtooth", 0.1);
+          playTone(ctx, 659.25, 0.12, 0.16, "sawtooth", 0.1);
+          playTone(ctx, 783.99, 0.24, 0.22, "sawtooth", 0.11);
+          playTone(ctx, 1046.5, 0.36, 0.45, "triangle", 0.15);
+          playNoiseBurst(ctx, 0.05, 1.25, 0.16, 750);
+        }
+      } catch (_e) {
+        // Ignore audio issues safely
+      }
+    }
+
+    window.toggleSound = function () {
+      soundEnabled = !soundEnabled;
+      document.getElementById("soundIcon").textContent = soundEnabled ? "🔊" : "🔇";
+      showToast(soundEnabled ? "Stadium SFX Enabled" : "Stadium SFX Muted", "info");
+    };
+
+    /* =========================================================================
+       5. FIREBASE INITIALIZATION & AUTHENTICATION (MANDATORY RULES)
+    ========================================================================= */
+    const appId = typeof __app_id !== "undefined" ? __app_id : "pitch-clash-xi";
+    let db = null;
+    let auth = null;
+    let currentUser = null;
+    let firebaseReady = false;
+    let roomUnsubscribe = null;
+
+    async function initFirebase() {
+      const statusDot = document.getElementById("onlineStatusDot");
+      const statusText = document.getElementById("onlineStatusText");
+      const uidEl = document.getElementById("fullUserIdDisplay");
+
+      try {
+        if (typeof __firebase_config === "undefined" || !__firebase_config) {
+          throw new Error("Online server config unavailable in this environment.");
+        }
+        const firebaseConfig = typeof __firebase_config === "string" ? JSON.parse(__firebase_config) : __firebase_config;
+        const app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        auth = getAuth(app);
+
+        // RULE 3: Authenticate FIRST before any Firestore call
+        if (typeof __initial_auth_token !== "undefined" && __initial_auth_token) {
+          const cred = await signInWithCustomToken(auth, __initial_auth_token);
+          currentUser = cred.user;
+        } else {
+          const cred = await signInAnonymously(auth);
+          currentUser = cred.user;
+        }
+
+        firebaseReady = true;
+        statusDot.className = "w-2 h-2 rounded-full bg-emerald-400";
+        statusText.textContent = "Online 1v1 Multiplayer Ready";
+        uidEl.textContent = currentUser.uid;
+
+        // Auto-detect ?room=CODE or ?match=CODE
+        const urlRoom = extractRoomCodeFromUrl();
+        if (urlRoom) {
+          document.getElementById("joinCodeInput").value = urlRoom;
+          showToast(`Invite link detected for room ${urlRoom}! Auto-joining...`, "info");
+          await joinOnlineMatch(urlRoom);
+        }
+      } catch (err) {
+        console.warn("Firebase notice:", err);
+        firebaseReady = false;
+        const fallbackId = "local-" + (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2));
+        statusDot.className = "w-2 h-2 rounded-full bg-amber-400";
+        statusText.textContent = "Offline Mode (AI & Local 1v1 Ready)";
+        uidEl.textContent = fallbackId;
+      }
+    }
+
+    function getMatchDocRef(roomCode) {
+      // RULE 1: Strict public collection path
+      return doc(db, "artifacts", appId, "public", "data", "pitch_clash_v2_rooms", roomCode);
+    }
+
+    function extractRoomCodeFromUrl() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get("room") || params.get("match");
+        return code ? sanitizeRoomCode(code) : null;
+      } catch (_e) {
+        return null;
+      }
+    }
+
+    function sanitizeRoomCode(raw) {
+      if (!raw) return "";
+      const str = String(raw).trim();
+      const paramMatch = str.match(/[?&](?:room|match)=([A-Za-z0-9]+)/i);
+      const extracted = paramMatch ? paramMatch[1] : str;
+      return extracted.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 8);
+    }
+
+    function generateRoomCode() {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let code = "";
+      for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+      return code;
+    }
+
+    function buildShareUrl(roomCode) {
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("match");
+        url.searchParams.set("room", roomCode);
+        return url.toString();
+      } catch (_e) {
+        return `?room=${roomCode}`;
+      }
+    }
+
+    /* =========================================================================
+       6. BALANCED 4-4-2 SQUAD DEALER (2 ATT, 4 MID, 4 DEF, 1 GK; <= 0.6 OVR DIFF)
+    ========================================================================= */
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function computeTeamAvgOvr(handIds) {
+      if (!handIds || handIds.length === 0) return 0;
+      const sum = handIds.reduce((acc, id) => acc + (PLAYER_MAP.get(id)?.ovr || 0), 0);
+      return Number((sum / handIds.length).toFixed(1));
+    }
+
+    function dealBalanced442Squads() {
+      const requirements = [
+        { pos: "ATT", count: 2 },
+        { pos: "MID", count: 4 },
+        { pos: "DEF", count: 4 },
+        { pos: "GK", count: 1 },
+      ];
+
+      // Store matched adjacent-tier pairs so we can optimize overall OVR balance cleanly
+      const pairs = []; // { pos, p1: playerObj, p2: playerObj }
+
+      for (const req of requirements) {
+        // Shuffle first so tied OVRs randomize, then sort by OVR descending
+        const sorted = shuffle(PLAYERS_DB.filter((p) => p.pos === req.pos)).sort((a, b) => b.ovr - a.ovr);
+        const adjacentPairs = [];
+        for (let i = 0; i + 1 < sorted.length; i += 2) {
+          adjacentPairs.push([sorted[i], sorted[i + 1]]);
+        }
+        // Randomly pick `req.count` adjacent-tier pairs for variety + positional parity
+        const chosenPairs = shuffle(adjacentPairs).slice(0, req.count);
+        for (const [a, b] of chosenPairs) {
+          if (Math.random() < 0.5) {
+            pairs.push({ pos: req.pos, p1: a, p2: b });
+          } else {
+            pairs.push({ pos: req.pos, p1: b, p2: a });
+          }
+        }
+      }
+
+      // Optimize swaps within same-position pairs so avg OVR difference <= 0.6 (usually 0.0 - 0.2)
+      for (let iter = 0; iter < 50; iter++) {
+        const sum1 = pairs.reduce((s, pr) => s + pr.p1.ovr, 0);
+        const sum2 = pairs.reduce((s, pr) => s + pr.p2.ovr, 0);
+        const diff = sum1 - sum2;
+        if (Math.abs(diff) <= 1) break; // <= 0.09 OVR average difference!
+
+        let bestIdx = -1;
+        let bestNewAbs = Math.abs(diff);
+        for (let i = 0; i < pairs.length; i++) {
+          const delta = pairs[i].p1.ovr - pairs[i].p2.ovr;
+          const candidateDiff = diff - 2 * delta;
+          if (Math.abs(candidateDiff) < bestNewAbs) {
+            bestNewAbs = Math.abs(candidateDiff);
+            bestIdx = i;
+          }
+        }
+        if (bestIdx === -1) break;
+        const tmp = pairs[bestIdx].p1;
+        pairs[bestIdx].p1 = pairs[bestIdx].p2;
+        pairs[bestIdx].p2 = tmp;
+      }
+
+      const posOrder = { ATT: 0, MID: 1, DEF: 2, GK: 3 };
+      const p1Hand = pairs
+        .map((pr) => pr.p1)
+        .sort((a, b) => posOrder[a.pos] - posOrder[b.pos] || b.ovr - a.ovr)
+        .map((p) => p.id);
+      const p2Hand = pairs
+        .map((pr) => pr.p2)
+        .sort((a, b) => posOrder[a.pos] - posOrder[b.pos] || b.ovr - a.ovr)
+        .map((p) => p.id);
+
+      return {
+        p1Hand,
+        p2Hand,
+        p1AvgOvr: computeTeamAvgOvr(p1Hand),
+        p2AvgOvr: computeTeamAvgOvr(p2Hand),
+      };
+    }
+
+    /* =========================================================================
+       7. STAMINA, LOCKOUT, BOOSTER & LONG-SHOT CALCULATION HELPERS
+    ========================================================================= */
+    function getStaminaPenalty(staminaVal) {
+      if (staminaVal >= 70) return 0;
+      if (staminaVal >= 45) return -3;
+      if (staminaVal >= 20) return -6;
+      return -10;
+    }
+
+    function getStaminaLabel(staminaVal) {
+      if (staminaVal >= 70) return { text: "Fresh", bar: "bg-emerald-400", textCls: "text-emerald-300" };
+      if (staminaVal >= 45) return { text: "Tired (-3)", bar: "bg-amber-400", textCls: "text-amber-300" };
+      if (staminaVal >= 20) return { text: "Exhausted (-6)", bar: "bg-orange-500", textCls: "text-orange-300" };
+      return { text: "Spent (-10)", bar: "bg-rose-500", textCls: "text-rose-300" };
+    }
+
+    function getEffectiveStats(playerObj, cardId, boostSpent = 0) {
+      const card = PLAYER_MAP.get(cardId);
+      if (!card) return {};
+      const stam = card.pos === "GK" ? 100 : (playerObj.stamina?.[cardId] ?? 100);
+      const stamMod = card.pos === "GK" ? 0 : getStaminaPenalty(stam);
+      const boostMod = (boostSpent || 0) * 2;
+      const totalMod = stamMod + boostMod;
+      const out = { _stam: stam, _stamMod: stamMod, _boostMod: boostMod, _totalMod: totalMod };
+      for (const [k, v] of Object.entries(card.stats)) {
+        out[k] = Math.max(1, v + totalMod);
+      }
+      return out;
+    }
+
+    function getPlayerGkId(playerObj) {
+      return playerObj.hand.find((id) => PLAYER_MAP.get(id)?.pos === "GK");
+    }
+
+    function isCardLocked(playerObj, cardId, duelCount) {
+      const card = PLAYER_MAP.get(cardId);
+      if (!card || card.pos === "GK") return false;
+      const until = playerObj.lockedUntil?.[cardId] || 0;
+      return until >= duelCount;
+    }
+
+    // Evaluate Long-Distance Shot 3 Conditions against Opponent GK
+    function evaluateLongShot(attPlayer, carrierId, boostSpent, oppGkId, gkBoost = 0) {
+      const attEff = getEffectiveStats(attPlayer, carrierId, boostSpent);
+      const gkCard = PLAYER_MAP.get(oppGkId);
+      const gkBoostMod = gkBoost * 2;
+      const gkSav = gkCard.stats.sav + gkBoostMod;
+      const gkDiv = gkCard.stats.div + gkBoostMod;
+      const gkHnd = gkCard.stats.hnd + gkBoostMod;
+
+      const c1Target = gkSav + 5;
+      const c2Target = gkDiv + 5;
+      const c3Target = gkHnd + 5;
+
+      const c1 = attEff.pwr >= c1Target;
+      const c2 = attEff.fin >= c2Target;
+      const c3 = attEff.pwr >= c3Target;
+
+      return {
+        success: c1 && c2 && c3,
+        attEff,
+        gkName: gkCard.name,
+        checks: [
+          { label: "PWR vs SAV+5", attVal: attEff.pwr, target: c1Target, pass: c1, diff: attEff.pwr - c1Target },
+          { label: "FIN vs DIV+5", attVal: attEff.fin, target: c2Target, pass: c2, diff: attEff.fin - c2Target },
+          { label: "PWR vs HND+5", attVal: attEff.pwr, target: c3Target, pass: c3, diff: attEff.pwr - c3Target },
+        ],
+      };
+    }
+
+    /* =========================================================================
+       8. GAME STATE & CORE ENGINE
+    ========================================================================= */
+    let matchTargetGoalsLobby = 3;
+    let gameState = null;
+    let mySide = "p1";
+    let localViewerSide = "p1";
+    let selectedCardId = null;     // Currently selected card for this turn
+    let pendingBoost = 0;          // Boosters currently dialed in (- / + / MAX)
+    let handPosFilter = "ALL";
+    let lastPlayedClashKey = "";
+    let hostingRoomCode = null;
+    let aiTimeoutId = null;
+
+    window.setMatchTargetGoals = function (n) {
+      matchTargetGoalsLobby = n;
+      const b3 = document.getElementById("btnTarget3");
+      const b5 = document.getElementById("btnTarget5");
+      if (n === 3) {
+        b3.className = "px-3.5 py-1.5 rounded-lg text-xs font-mono font-extrabold bg-amber-400 text-slate-950 transition";
+        b5.className = "px-3.5 py-1.5 rounded-lg text-xs font-mono font-extrabold text-slate-300 hover:text-white transition";
+      } else {
+        b5.className = "px-3.5 py-1.5 rounded-lg text-xs font-mono font-extrabold bg-amber-400 text-slate-950 transition";
+        b3.className = "px-3.5 py-1.5 rounded-lg text-xs font-mono font-extrabold text-slate-300 hover:text-white transition";
+      }
+      playSfx("select");
+    };
+
+    function buildStaminaMap(handIds) {
+      const m = {};
+      handIds.forEach((id) => { m[id] = 100; });
+      return m;
+    }
+
+    function createInitialMatchState(mode, roomCode, p1Uid, p1Name, p2Uid, p2Name, targetGoals = 3) {
+      const dealt = dealBalanced442Squads();
+      return {
+        roomCode,
+        mode,
+        targetGoals,
+        status: mode === "online" && !p2Uid ? "waiting" : "playing",
+        p1: {
+          uid: p1Uid,
+          name: p1Name || "Manager 1",
+          score: 0,
+          avgOvr: dealt.p1AvgOvr,
+          hand: dealt.p1Hand,
+          stamina: buildStaminaMap(dealt.p1Hand),
+          lockedUntil: {},
+          lockedOrder: {},
+          boosters: 0,
+          duelsWon: 0,
+          longGoals: 0,
+          savesMade: 0,
+        },
+        p2: {
+          uid: p2Uid || null,
+          name: p2Name || (mode === "ai" ? "Tactical AI" : "Manager 2"),
+          score: 0,
+          avgOvr: dealt.p2AvgOvr,
+          hand: dealt.p2Hand,
+          stamina: buildStaminaMap(dealt.p2Hand),
+          lockedUntil: {},
+          lockedOrder: {},
+          boosters: 0,
+          duelsWon: 0,
+          longGoals: 0,
+          savesMade: 0,
+        },
+        duelCount: 1,              // Global turn/duel counter for 1-turn lockouts
+        attackerSide: "p1",
+        zone: 1,                   // 1: High Press, 2: Midfield, 3: Edge of Box, 4: Close to Goal
+        phase: "select",           // "select" | "clash" | "finished"
+        ballCarrierId: null,       // Persists across Zones 2, 3, 4 unless attacker passes!
+        pendingAttId: null,
+        pendingAttAction: "advance", // "advance" | "longshot" | "closeshot"
+        pendingAttBoost: 0,
+        attReady: false,
+        pendingDefId: null,
+        pendingDefBoost: 0,
+        defReady: false,
+        activeAttId: null,
+        activeDefId: null,
+        lastDuelResult: null,
+        commentary: [
+          {
+            turn: 1,
+            zone: 1,
+            text: `Kick-off! Balanced 4-4-2 squads (OVR ${dealt.p1AvgOvr} vs ${dealt.p2AvgOvr}). First to ${targetGoals} goals wins!`,
+            type: "info",
+          },
+        ],
+        winnerSide: null,
+        updatedAt: Date.now(),
+      };
+    }
+
+    function getDefenderSide(state) {
+      return state.attackerSide === "p1" ? "p2" : "p1";
+    }
+
+    function getRequiredDefPos(zone) {
+      if (zone === 1) return "ATT";
+      if (zone === 2) return "MID";
+      if (zone === 3) return "DEF";
+      return "GK";
+    }
+
+    // Returns eligible card IDs for a side; enforces softlock safeguard
+    function getEligibleCardsForTurn(state, side, mutateSafeguard = false) {
+      const playerObj = state[side];
+      const isAtt = side === state.attackerSide;
+
+      if (isAtt) {
+        // ANY unlocked outfield card (ATT, MID, DEF — everyone except GK)
+        const outfield = playerObj.hand.filter((id) => PLAYER_MAP.get(id)?.pos !== "GK");
+        const unlocked = outfield.filter((id) => !isCardLocked(playerObj, id, state.duelCount));
+        if (unlocked.length > 0) return unlocked;
+        // Safeguard: unlock oldest locked outfielder
+        const oldest = [...outfield].sort((a, b) => (playerObj.lockedOrder[a] || 0) - (playerObj.lockedOrder[b] || 0))[0];
+        if (mutateSafeguard && oldest) {
+          delete playerObj.lockedUntil[oldest];
+          delete playerObj.lockedOrder[oldest];
+        }
+        return oldest ? [oldest] : outfield;
+      } else {
+        const reqPos = getRequiredDefPos(state.zone);
+        const line = playerObj.hand.filter((id) => PLAYER_MAP.get(id)?.pos === reqPos);
+        if (reqPos === "GK") return line; // GK exempt from lockout
+        const unlocked = line.filter((id) => !isCardLocked(playerObj, id, state.duelCount));
+        if (unlocked.length > 0) return unlocked;
+        // Safeguard: unlock oldest locked card in this defensive line
+        const oldest = [...line].sort((a, b) => (playerObj.lockedOrder[a] || 0) - (playerObj.lockedOrder[b] || 0))[0];
+        if (mutateSafeguard && oldest) {
+          delete playerObj.lockedUntil[oldest];
+          delete playerObj.lockedOrder[oldest];
+        }
+        return oldest ? [oldest] : line;
+      }
+    }
+
+    function ensureSoftlockSafeguard(state) {
+      getEligibleCardsForTurn(state, state.attackerSide, true);
+      getEligibleCardsForTurn(state, getDefenderSide(state), true);
+    }
+
+    /* ----- CORE DUEL RESOLUTION ENGINE ----- */
+    function resolveDuel(state) {
+      const attSide = state.attackerSide;
+      const defSide = getDefenderSide(state);
+      const attPlayer = state[attSide];
+      const defPlayer = state[defSide];
+
+      const attId = state.pendingAttId;
+      const attAction = state.pendingAttAction; // "advance" | "longshot" | "closeshot"
+      const attBoost = Math.min(attPlayer.boosters, Math.max(0, state.pendingAttBoost || 0));
+
+      let defId = state.pendingDefId;
+      let defBoost = Math.min(defPlayer.boosters, Math.max(0, state.pendingDefBoost || 0));
+
+      const attCard = PLAYER_MAP.get(attId);
+      const isLongShot = attAction === "longshot" && state.zone < 4;
+
+      // Consume Attacker Boosters
+      attPlayer.boosters = Math.max(0, attPlayer.boosters - attBoost);
+
+      // If Long Shot bypassed outfielder, target GK directly & refund defender's unused outfield boosters!
+      let defCard;
+      if (isLongShot) {
+        defId = getPlayerGkId(defPlayer);
+        defBoost = 0; // Outfield defender was bypassed; defender keeps their boosters!
+        defCard = PLAYER_MAP.get(defId);
+      } else {
+        defPlayer.boosters = Math.max(0, defPlayer.boosters - defBoost);
+        defCard = PLAYER_MAP.get(defId);
+      }
+
+      state.activeAttId = attId;
+      state.activeDefId = defId;
+
+      const attEff = getEffectiveStats(attPlayer, attId, attBoost);
+      const defEff = getEffectiveStats(defPlayer, defId, defBoost);
+
+      let winner = "def";
+      let isGoal = false;
+      let headline = "";
+      let detail = "";
+      let attLabel = "";
+      let defLabel = "";
+      let attVal = 0;
+      let defVal = 0;
+      let mathNote = "";
+      let longShotReport = null;
+      let passedFromName = null;
+
+      if (state.zone > 1 && state.ballCarrierId && state.ballCarrierId !== attId) {
+        passedFromName = PLAYER_MAP.get(state.ballCarrierId)?.name || null;
+      }
+
+      if (isLongShot) {
+        // LONG-DISTANCE SHOT FROM ZONE 1, 2, OR 3
+        longShotReport = evaluateLongShot(attPlayer, attId, attBoost, defId, 0);
+        if (longShotReport.success) {
+          winner = "att";
+          isGoal = true;
+          attPlayer.score += 1;
+          attPlayer.longGoals = (attPlayer.longGoals || 0) + 1;
+          attPlayer.duelsWon = (attPlayer.duelsWon || 0) + 1;
+          headline = "THUNDERBOLT GOAL!!!";
+          detail = `${attCard.name} unleashes an unstoppable Zone ${state.zone} long-range rocket past ${defCard.name}!`;
+        } else {
+          winner = "def";
+          defPlayer.savesMade = (defPlayer.savesMade || 0) + 1;
+          defPlayer.duelsWon = (defPlayer.duelsWon || 0) + 1;
+          defPlayer.boosters = Math.min(10, defPlayer.boosters + 1);
+          // Lock defeated shooter next turn
+          attPlayer.lockedUntil[attId] = state.duelCount + 1;
+          attPlayer.lockedOrder[attId] = state.duelCount;
+          headline = "LONG SHOT SAVED!";
+          detail = `${defCard.name} denies ${attCard.name} from distance! ${defPlayer.name} wins the ball (+1 ⚡ Booster).`;
+        }
+      } else if (state.zone === 1) {
+        // ZONE 1: High Press — Carrier SPD vs Opp ATT DEF
+        attVal = attEff.spd;
+        defVal = defEff.def;
+        attLabel = `SPD ${attVal}`;
+        defLabel = `DEF ${defVal}`;
+        mathNote = `SPD ${attCard.stats.spd}${fmtMod(attEff._stamMod)}${fmtBoost(attEff._boostMod)} vs ATT DEF ${defCard.stats.def}${fmtMod(defEff._stamMod)}${fmtBoost(defEff._boostMod)}`;
+        if (attVal > defVal) {
+          winner = "att";
+          attPlayer.duelsWon = (attPlayer.duelsWon || 0) + 1;
+          defPlayer.lockedUntil[defId] = state.duelCount + 1;
+          defPlayer.lockedOrder[defId] = state.duelCount;
+          headline = "BEAT THE PRESS!";
+          detail = `${attCard.name} bursts past ${defCard.name} into Midfield! (${defCard.name} locked next turn)`;
+        } else {
+          winner = "def";
+          defPlayer.duelsWon = (defPlayer.duelsWon || 0) + 1;
+          defPlayer.boosters = Math.min(10, defPlayer.boosters + 1);
+          attPlayer.lockedUntil[attId] = state.duelCount + 1;
+          attPlayer.lockedOrder[attId] = state.duelCount;
+          headline = "PRESS WON!";
+          detail = `${defCard.name} intercepts ${attCard.name}! ${defPlayer.name} wins possession (+1 ⚡ Booster).`;
+        }
+      } else if (state.zone === 2) {
+        // ZONE 2: Midfield — Carrier DRI vs Opp MID DEF
+        attVal = attEff.dri;
+        defVal = defEff.def;
+        attLabel = `DRI ${attVal}`;
+        defLabel = `DEF ${defVal}`;
+        mathNote = `DRI ${attCard.stats.dri}${fmtMod(attEff._stamMod)}${fmtBoost(attEff._boostMod)} vs MID DEF ${defCard.stats.def}${fmtMod(defEff._stamMod)}${fmtBoost(defEff._boostMod)}`;
+        if (attVal > defVal) {
+          winner = "att";
+          attPlayer.duelsWon = (attPlayer.duelsWon || 0) + 1;
+          defPlayer.lockedUntil[defId] = state.duelCount + 1;
+          defPlayer.lockedOrder[defId] = state.duelCount;
+          headline = "DRIBBLED PAST!";
+          detail = `${passedFromName ? `Pass from ${passedFromName} → ` : ""}${attCard.name} glides past ${defCard.name} to the Edge of the Box!`;
+        } else {
+          winner = "def";
+          defPlayer.duelsWon = (defPlayer.duelsWon || 0) + 1;
+          defPlayer.boosters = Math.min(10, defPlayer.boosters + 1);
+          attPlayer.lockedUntil[attId] = state.duelCount + 1;
+          attPlayer.lockedOrder[attId] = state.duelCount;
+          headline = "MIDFIELD INTERCEPT!";
+          detail = `${defCard.name} wins the ball off ${attCard.name}! ${defPlayer.name} earns +1 ⚡ Booster.`;
+        }
+      } else if (state.zone === 3) {
+        // ZONE 3: Edge of Box — Carrier CTL vs Opp DEF DEF
+        attVal = attEff.ctl;
+        defVal = defEff.def;
+        attLabel = `CTL ${attVal}`;
+        defLabel = `DEF ${defVal}`;
+        mathNote = `CTL ${attCard.stats.ctl}${fmtMod(attEff._stamMod)}${fmtBoost(attEff._boostMod)} vs DEF ${defCard.stats.def}${fmtMod(defEff._stamMod)}${fmtBoost(defEff._boostMod)}`;
+        if (attVal > defVal) {
+          winner = "att";
+          attPlayer.duelsWon = (attPlayer.duelsWon || 0) + 1;
+          defPlayer.lockedUntil[defId] = state.duelCount + 1;
+          defPlayer.lockedOrder[defId] = state.duelCount;
+          headline = "INTO THE BOX!";
+          detail = `${passedFromName ? `Pass from ${passedFromName} → ` : ""}${attCard.name} out-controls ${defCard.name} — 1-on-1 CLOSE TO GOAL!`;
+        } else {
+          winner = "def";
+          defPlayer.duelsWon = (defPlayer.duelsWon || 0) + 1;
+          defPlayer.boosters = Math.min(10, defPlayer.boosters + 1);
+          attPlayer.lockedUntil[attId] = state.duelCount + 1;
+          attPlayer.lockedOrder[attId] = state.duelCount;
+          headline = "CRUNCHING TACKLE!";
+          detail = `${defCard.name} shuts the door on ${attCard.name}! ${defPlayer.name} wins the ball (+1 ⚡ Booster).`;
+        }
+      } else {
+        // ZONE 4: Close-Range Shot inside the Box vs GK
+        attVal = attEff.fin + attEff.pwr;
+        defVal = defEff.div + defEff.sav;
+        attLabel = `FIN+PWR ${attVal}`;
+        defLabel = `DIV+SAV ${defVal}`;
+        const tied = attVal === defVal;
+        const wonTiebreak = tied && attEff.ctl > defEff.hnd;
+        mathNote = `FIN ${attEff.fin} + PWR ${attEff.pwr} (${attVal}) vs GK DIV ${defEff.div} + SAV ${defEff.sav} (${defVal})${tied ? ` • Tiebreak CTL ${attEff.ctl} vs HND ${defEff.hnd}` : ""}`;
+
+        if (attVal > defVal || wonTiebreak) {
+          winner = "att";
+          isGoal = true;
+          attPlayer.score += 1;
+          attPlayer.duelsWon = (attPlayer.duelsWon || 0) + 1;
+          headline = "GOAL!!!";
+          detail = `${passedFromName ? `Cutback from ${passedFromName} → ` : ""}${attCard.name} buries it past ${defCard.name} from close range!`;
+        } else {
+          winner = "def";
+          defPlayer.savesMade = (defPlayer.savesMade || 0) + 1;
+          defPlayer.duelsWon = (defPlayer.duelsWon || 0) + 1;
+          defPlayer.boosters = Math.min(10, defPlayer.boosters + 1);
+          attPlayer.lockedUntil[attId] = state.duelCount + 1;
+          attPlayer.lockedOrder[attId] = state.duelCount;
+          headline = "WORLD-CLASS SAVE!";
+          detail = `${defCard.name} denies ${attCard.name} 1-on-1! ${defPlayer.name} wins possession (+1 ⚡ Booster).`;
+        }
+      }
+
+      // Apply Stamina Drain (-28% Long Shot, -22% Standard) & +15% Recovery for all resting outfield cards
+      const attDrain = isLongShot ? 28 : 22;
+      applyStaminaUpdates(attPlayer, [attId], attDrain);
+      const defUsedList = !isLongShot && defCard.pos !== "GK" ? [defId] : [];
+      applyStaminaUpdates(defPlayer, defUsedList, 22);
+
+      // Determine whether possession flips or continues
+      const possessionFlips = isGoal || winner === "def";
+
+      state.phase = "clash";
+      state.lastDuelResult = {
+        key: `${state.duelCount}-${Date.now()}`,
+        zone: state.zone,
+        isLongShot,
+        winner,
+        isGoal,
+        possessionFlips,
+        headline,
+        detail,
+        attLabel,
+        attVal,
+        defLabel,
+        defVal,
+        mathNote,
+        attBoostSpent: attBoost,
+        defBoostSpent: defBoost,
+        longShotReport,
+        scorerName: isGoal ? attCard.name : null,
+        attId,
+        defId,
+      };
+
+      state.commentary.unshift({
+        turn: state.duelCount,
+        zone: state.zone,
+        text: `${headline} ${detail}`,
+        type: isGoal ? "goal" : winner === "att" ? "att" : "def",
+      });
+      if (state.commentary.length > 35) state.commentary.length = 35;
+    }
+
+    function applyStaminaUpdates(playerObj, usedIds, drainAmount) {
+      playerObj.hand.forEach((id) => {
+        const card = PLAYER_MAP.get(id);
+        if (!card || card.pos === "GK") {
+          playerObj.stamina[id] = 100;
+          return;
+        }
+        const curr = playerObj.stamina[id] ?? 100;
+        if (usedIds.includes(id)) {
+          playerObj.stamina[id] = Math.max(0, curr - drainAmount);
+        } else {
+          playerObj.stamina[id] = Math.min(100, curr + 15);
+        }
+      });
+    }
+
+    function fmtMod(m) {
+      if (!m) return "";
+      return m < 0 ? ` ${m} stam` : ` +${m}`;
+    }
+
+    function fmtBoost(b) {
+      if (!b) return "";
+      return ` +${b} ⚡`;
+    }
+
+    function advanceAfterClash(state) {
+      const res = state.lastDuelResult;
+      if (!res) return;
+
+      // Check Victory Condition
+      if (state.p1.score >= state.targetGoals || state.p2.score >= state.targetGoals) {
+        state.status = "finished";
+        state.phase = "finished";
+        state.winnerSide = state.p1.score >= state.targetGoals ? "p1" : "p2";
+        state.commentary.unshift({
+          turn: state.duelCount,
+          zone: state.zone,
+          text: `FULL TIME! ${state[state.winnerSide].name} wins ${state.p1.score}–${state.p2.score}!`,
+          type: "goal",
+        });
+        return;
+      }
+
+      // Advance global duel turn counter -> automatically expires previous 1-turn locks!
+      state.duelCount += 1;
+      [state.p1, state.p2].forEach((pl) => {
+        Object.keys(pl.lockedUntil || {}).forEach((id) => {
+          if (pl.lockedUntil[id] < state.duelCount) {
+            delete pl.lockedUntil[id];
+            delete pl.lockedOrder[id];
+          }
+        });
+      });
+
+      if (!res.possessionFlips && state.zone < 4) {
+        // Attacker advances to next zone with the current ball carrier!
+        state.zone += 1;
+        state.ballCarrierId = res.attId;
+      } else {
+        // Possession flips to opponent at Zone 1
+        state.attackerSide = state.attackerSide === "p1" ? "p2" : "p1";
+        state.zone = 1;
+        state.ballCarrierId = null;
+      }
+
+      state.phase = "select";
+      state.pendingAttId = null;
+      state.pendingAttAction = "advance";
+      state.pendingAttBoost = 0;
+      state.attReady = false;
+      state.pendingDefId = null;
+      state.pendingDefBoost = 0;
+      state.defReady = false;
+      state.activeAttId = null;
+      state.activeDefId = null;
+      state.lastDuelResult = null;
+
+      // Softlock safeguard
+      ensureSoftlockSafeguard(state);
+    }
+
+    /* =========================================================================
+       9. ONLINE MULTIPLAYER (FIRESTORE) + LOCAL / AI FLOWS
+    ========================================================================= */
+    async function saveOnlineState(newState) {
+      if (!firebaseReady || !db || !currentUser || !newState?.roomCode) return;
+      newState.updatedAt = Date.now();
+      try {
+        await setDoc(getMatchDocRef(newState.roomCode), newState);
+      } catch (err) {
+        console.error("Firestore sync error:", err);
+        showToast("Sync error — retrying connection.", "error");
+      }
+    }
+
+    function subscribeToRoom(roomCode) {
+      if (roomUnsubscribe) {
+        roomUnsubscribe();
+        roomUnsubscribe = null;
+      }
+      if (!firebaseReady || !db || !currentUser) return;
+
+      const ref = getMatchDocRef(roomCode);
+      roomUnsubscribe = onSnapshot(
+        ref,
+        (snap) => {
+          if (!snap.exists()) return;
+          const remote = snap.data();
+          const prevTurn = gameState?.duelCount;
+          const prevPhase = gameState?.phase;
+          gameState = remote;
+
+          if (remote.status === "waiting") {
+            document.getElementById("waitingRoomPanel").classList.remove("hidden");
+            document.getElementById("waitBalanceBadge").textContent = `Balanced XI: ${remote.p1.avgOvr} vs ${remote.p2.avgOvr} OVR`;
+            return;
+          }
+
+          document.getElementById("waitingRoomPanel").classList.add("hidden");
+          if (document.getElementById("gameView").classList.contains("hidden")) {
+            playSfx("whistle");
+            showToast(`Match live vs ${remote[mySide === "p1" ? "p2" : "p1"].name}!`, "success");
+            enterGameView();
+          }
+
+          if (prevTurn !== remote.duelCount || prevPhase !== remote.phase) {
+            resetLocalSelectionDefaults();
+          }
+
+          [...remote.p1.hand, ...remote.p2.hand].forEach(queuePlayerImageFetch);
+          renderGame();
+        },
+        (error) => {
+          console.error("Room listener error:", error);
+          showToast("Live room connection issue.", "error");
+        }
+      );
+    }
+
+    window.createOnlineMatch = async function () {
+      if (!firebaseReady || !db || !currentUser) {
+        showToast("Live online server is unavailable right now. Play vs AI or Local 1v1 works offline!", "error");
+        return;
+      }
+      playSfx("select");
+      const name = document.getElementById("managerNameInput").value.trim() || "Manager 1";
+      const roomCode = generateRoomCode();
+      hostingRoomCode = roomCode;
+      mySide = "p1";
+
+      const initial = createInitialMatchState("online", roomCode, currentUser.uid, name, null, "Waiting...", matchTargetGoalsLobby);
+      await saveOnlineState(initial);
+
+      const shareUrl = buildShareUrl(roomCode);
+      document.getElementById("waitRoomCode").textContent = roomCode;
+      document.getElementById("waitShareUrlText").textContent = shareUrl;
+      document.getElementById("waitBalanceBadge").textContent = `Balanced XI: ${initial.p1.avgOvr} vs ${initial.p2.avgOvr} OVR`;
+      document.getElementById("waitingRoomPanel").classList.remove("hidden");
+      showToast(`Room ${roomCode} created! Share the invite link.`, "success");
+
+      subscribeToRoom(roomCode);
+    };
+
+    window.cancelHosting = function () {
+      if (roomUnsubscribe) {
+        roomUnsubscribe();
+        roomUnsubscribe = null;
+      }
+      hostingRoomCode = null;
+      gameState = null;
+      document.getElementById("waitingRoomPanel").classList.add("hidden");
+    };
+
+    window.joinOnlineMatchFromInput = async function () {
+      const code = sanitizeRoomCode(document.getElementById("joinCodeInput").value);
+      if (!code || code.length < 4) {
+        showToast("Enter a valid Room Code or paste an invite link.", "error");
+        return;
+      }
+      await joinOnlineMatch(code);
+    };
+
+    async function joinOnlineMatch(roomCode) {
+      if (!firebaseReady || !db || !currentUser) {
+        showToast("Online multiplayer server unavailable right now.", "error");
+        return;
+      }
+      try {
+        const ref = getMatchDocRef(roomCode);
+        const snap = await getDoc(ref);
+        if (!snap.exists()) {
+          showToast(`Room "${roomCode}" not found.`, "error");
+          return;
+        }
+        const data = snap.data();
+        const myName = document.getElementById("managerNameInput").value.trim() || "Challenger";
+
+        if (data.p1.uid === currentUser.uid) {
+          mySide = "p1";
+          hostingRoomCode = roomCode;
+          subscribeToRoom(roomCode);
+          if (data.status !== "waiting") {
+            gameState = data;
+            enterGameView();
+            resetLocalSelectionDefaults();
+            renderGame();
+          } else {
+            document.getElementById("waitRoomCode").textContent = roomCode;
+            document.getElementById("waitShareUrlText").textContent = buildShareUrl(roomCode);
+            document.getElementById("waitingRoomPanel").classList.remove("hidden");
+          }
+          return;
+        }
+
+        if (data.p2.uid && data.p2.uid !== currentUser.uid) {
+          showToast("This 1v1 room is already full!", "error");
+          return;
+        }
+
+        mySide = "p2";
+        data.p2.uid = currentUser.uid;
+        data.p2.name = myName === "Manager 1" ? "Manager 2" : myName;
+        data.status = "playing";
+        data.commentary.unshift({
+          turn: 1,
+          zone: 1,
+          text: `${data.p2.name} joined! Balanced 4-4-2 clash (${data.p1.avgOvr} vs ${data.p2.avgOvr} OVR) begins!`,
+          type: "info",
+        });
+
+        await saveOnlineState(data);
+        subscribeToRoom(roomCode);
+      } catch (err) {
+        console.error("Join room error:", err);
+        showToast("Could not join room. Try again.", "error");
+      }
+    }
+
+    window.startLocalOrAiMatch = function (mode) {
+      playSfx("whistle");
+      if (roomUnsubscribe) {
+        roomUnsubscribe();
+        roomUnsubscribe = null;
+      }
+      const p1Name = document.getElementById("managerNameInput").value.trim() || "Player 1";
+      const p2Name = mode === "ai" ? "Tactical AI" : "Player 2";
+      mySide = "p1";
+      localViewerSide = "p1";
+      handPosFilter = "ALL";
+      lastPlayedClashKey = "";
+
+      gameState = createInitialMatchState(mode, mode.toUpperCase(), "local-p1", p1Name, "local-p2", p2Name, matchTargetGoalsLobby);
+      [...gameState.p1.hand, ...gameState.p2.hand].forEach(queuePlayerImageFetch);
+      enterGameView();
+      resetLocalSelectionDefaults();
+      renderGame();
+      maybeTriggerAiMove();
+    };
+
+    /* =========================================================================
+       10. INTERACTION HANDLERS, BOOSTER SPENDER & SMART AI
+    ========================================================================= */
+    function getActiveSide() {
+      return gameState.mode === "local" ? localViewerSide : mySide;
+    }
+
+    function resetLocalSelectionDefaults() {
+      if (!gameState || gameState.phase !== "select") {
+        selectedCardId = null;
+        pendingBoost = 0;
+        return;
+      }
+      const side = getActiveSide();
+      const isAtt = side === gameState.attackerSide;
+      pendingBoost = 0;
+
+      if (isAtt) {
+        // In Zones 2, 3, 4 default to current ball carrier if unlocked
+        if (gameState.zone > 1 && gameState.ballCarrierId && !isCardLocked(gameState[side], gameState.ballCarrierId, gameState.duelCount)) {
+          selectedCardId = gameState.ballCarrierId;
+        } else {
+          selectedCardId = null;
+        }
+      } else {
+        // In Zone 4 defender auto-selects their lone GK!
+        if (gameState.zone === 4) {
+          selectedCardId = getPlayerGkId(gameState[side]);
+        } else {
+          selectedCardId = null;
+        }
+      }
+    }
+
+    window.selectHandCard = function (cardId) {
+      if (!gameState || gameState.phase !== "select") return;
+      const side = getActiveSide();
+      const isAtt = side === gameState.attackerSide;
+      if (isAtt && gameState.attReady) return;
+      if (!isAtt && gameState.defReady) return;
+
+      const eligible = getEligibleCardsForTurn(gameState, side, false);
+      if (!eligible.includes(cardId)) return;
+
+      playSfx("select");
+      selectedCardId = cardId;
+      renderGame();
+    };
+
+    window.adjustPendingBoost = function (delta) {
+      if (!gameState || gameState.phase !== "select") return;
+      const side = getActiveSide();
+      const maxAvail = gameState[side].boosters || 0;
+      const next = Math.max(0, Math.min(maxAvail, pendingBoost + delta));
+      if (next !== pendingBoost) {
+        pendingBoost = next;
+        playSfx(delta > 0 ? "booster" : "select");
+        renderGame();
+      }
+    };
+
+    window.setMaxPendingBoost = function () {
+      if (!gameState || gameState.phase !== "select") return;
+      const side = getActiveSide();
+      const maxAvail = gameState[side].boosters || 0;
+      if (maxAvail > 0 && pendingBoost !== maxAvail) {
+        pendingBoost = maxAvail;
+        playSfx("booster");
+        renderGame();
+      }
+    };
+
+    window.confirmTurnAction = async function (actionType) {
+      if (!gameState || gameState.phase !== "select") return;
+      const side = getActiveSide();
+      const isAtt = side === gameState.attackerSide;
+
+      if (isAtt) {
+        if (!selectedCardId) {
+          showToast("Select any unlocked outfield card (ATT, MID, or DEF) first!", "error");
+          return;
+        }
+        gameState.pendingAttId = selectedCardId;
+        gameState.pendingAttAction = gameState.zone === 4 ? "closeshot" : actionType; // "advance" | "longshot"
+        gameState.pendingAttBoost = Math.min(gameState[side].boosters, pendingBoost);
+        gameState.attReady = true;
+      } else {
+        const defPick = gameState.zone === 4 ? getPlayerGkId(gameState[side]) : selectedCardId;
+        if (!defPick) {
+          showToast(`Select an unlocked ${getRequiredDefPos(gameState.zone)} card to defend!`, "error");
+          return;
+        }
+        gameState.pendingDefId = defPick;
+        gameState.pendingDefBoost = Math.min(gameState[side].boosters, pendingBoost);
+        gameState.defReady = true;
+      }
+
+      playSfx("select");
+      selectedCardId = null;
+      pendingBoost = 0;
+
+      if (gameState.attReady && gameState.defReady) {
+        resolveDuel(gameState);
+      } else if (gameState.mode === "local") {
+        const nextSide = side === "p1" ? "p2" : "p1";
+        localViewerSide = nextSide;
+        handPosFilter = "ALL";
+        resetLocalSelectionDefaults();
+        showPrivacyVeil(
+          gameState[nextSide].name,
+          nextSide === gameState.attackerSide
+            ? `Zone ${gameState.zone} — Choose your attacker, pass, or Long Shot!`
+            : `Zone ${gameState.zone} — Choose your ${getRequiredDefPos(gameState.zone)} counter & boosters!`
+        );
+      }
+
+      await commitStateMutation();
+    };
+
+    window.continueAfterClash = async function () {
+      if (!gameState || gameState.phase !== "clash") return;
+      playSfx("select");
+      advanceAfterClash(gameState);
+      handPosFilter = "ALL";
+
+      if (gameState.mode === "local" && gameState.status === "playing") {
+        localViewerSide = gameState.attackerSide;
+        resetLocalSelectionDefaults();
+        showPrivacyVeil(gameState[localViewerSide].name, `Zone ${gameState.zone} — Your turn to attack!`);
+      } else {
+        resetLocalSelectionDefaults();
+      }
+
+      await commitStateMutation();
+    };
+
+    async function commitStateMutation() {
+      if (gameState.mode === "online") {
+        await saveOnlineState(gameState);
+      } else {
+        renderGame();
+        maybeTriggerAiMove();
+      }
+    }
+
+    /* ----- SMART TACTICAL AI (MANAGES STAMINA, LOCKOUTS, BOOSTERS & LONG SHOTS) ----- */
+    function maybeTriggerAiMove() {
+      if (!gameState || gameState.mode !== "ai" || gameState.status !== "playing") return;
+      if (gameState.phase !== "select") return;
+
+      const aiSide = "p2";
+      const oppSide = "p1";
+      const aiIsAtt = gameState.attackerSide === aiSide;
+      const aiNeedsMove = aiIsAtt ? !gameState.attReady : !gameState.defReady;
+      if (!aiNeedsMove) return;
+
+      clearTimeout(aiTimeoutId);
+      aiTimeoutId = setTimeout(() => {
+        if (!gameState || gameState.phase !== "select") return;
+        const aiObj = gameState[aiSide];
+        const oppObj = gameState[oppSide];
+        const eligible = getEligibleCardsForTurn(gameState, aiSide, true);
+
+        if (aiIsAtt) {
+          const oppGkId = getPlayerGkId(oppObj);
+
+          // 1. Check if ANY eligible outfield card can score a guaranteed Long Shot (Zones 1-3) with available boosters!
+          if (gameState.zone < 4) {
+            let bestLong = null;
+            for (const cid of eligible) {
+              for (let b = 0; b <= aiObj.boosters; b++) {
+                const check = evaluateLongShot(aiObj, cid, b, oppGkId, 0);
+                if (check.success) {
+                  if (!bestLong || b < bestLong.boost || (b === bestLong.boost && (aiObj.stamina[cid] || 100) > (aiObj.stamina[bestLong.cid] || 100))) {
+                    bestLong = { cid, boost: b };
+                  }
+                  break;
+                }
+              }
+            }
+            if (bestLong) {
+              gameState.pendingAttId = bestLong.cid;
+              gameState.pendingAttAction = "longshot";
+              gameState.pendingAttBoost = bestLong.boost;
+              gameState.attReady = true;
+            }
+          }
+
+          // 2. Otherwise pick best card for current Zone (considering stamina!)
+          if (!gameState.attReady) {
+            const scored = eligible.map((cid) => {
+              const eff = getEffectiveStats(aiObj, cid, 0);
+              let score = 0;
+              if (gameState.zone === 1) score = eff.spd * 1.4 + eff.dri * 0.4 + eff._stam * 0.12;
+              else if (gameState.zone === 2) score = eff.dri * 1.4 + eff.ctl * 0.4 + eff._stam * 0.12;
+              else if (gameState.zone === 3) score = eff.ctl * 1.4 + eff.fin * 0.4 + eff._stam * 0.12;
+              else score = (eff.fin + eff.pwr) * 1.2 + eff.ctl * 0.25;
+              return { cid, score, eff };
+            }).sort((a, b) => b.score - a.score);
+
+            const pick = scored[0];
+            let boostSpend = 0;
+            if (gameState.zone === 4) {
+              // Zone 4 close-range shot: spend enough boosters to beat GK!
+              const oppGk = PLAYER_MAP.get(oppGkId);
+              const target = oppGk.stats.div + oppGk.stats.sav + 1;
+              const curr = pick.eff.fin + pick.eff.pwr;
+              if (curr < target) {
+                const needed = Math.ceil((target - curr) / 4);
+                boostSpend = Math.min(aiObj.boosters, needed + (oppObj.boosters > 0 ? 1 : 0));
+              } else if (oppObj.boosters > 0) {
+                boostSpend = Math.min(aiObj.boosters, Math.min(2, oppObj.boosters));
+              }
+            } else if (gameState.zone === 3 && aiObj.boosters >= 2) {
+              boostSpend = Math.min(aiObj.boosters, 2);
+            } else if (aiObj.boosters >= 5) {
+              // Spend a couple if stacked high
+              boostSpend = 2;
+            }
+
+            gameState.pendingAttId = pick.cid;
+            gameState.pendingAttAction = gameState.zone === 4 ? "closeshot" : "advance";
+            gameState.pendingAttBoost = boostSpend;
+            gameState.attReady = true;
+          }
+        } else {
+          // AI DEFENDING: Pick highest effective DEF (Zones 1-3) or GK (Zone 4)
+          if (gameState.zone === 4) {
+            const gkId = getPlayerGkId(aiObj);
+            // Spend boosters to protect goal in 1v1!
+            const boostSpend = aiObj.boosters > 0 ? Math.min(aiObj.boosters, 3) : 0;
+            gameState.pendingDefId = gkId;
+            gameState.pendingDefBoost = boostSpend;
+            gameState.defReady = true;
+          } else {
+            const scored = eligible.map((cid) => {
+              const eff = getEffectiveStats(aiObj, cid, 0);
+              return { cid, val: eff.def + eff._stam * 0.08 };
+            }).sort((a, b) => b.val - a.val);
+
+            const pick = scored[0];
+            let boostSpend = 0;
+            if (gameState.zone === 3 && aiObj.boosters >= 2) boostSpend = Math.min(aiObj.boosters, 2);
+            else if (gameState.zone === 2 && aiObj.boosters >= 3) boostSpend = 1;
+
+            gameState.pendingDefId = pick.cid;
+            gameState.pendingDefBoost = boostSpend;
+            gameState.defReady = true;
+          }
+        }
+
+        if (gameState.attReady && gameState.defReady) {
+          resolveDuel(gameState);
+        }
+        renderGame();
+      }, 580);
+    }
+
+    /* =========================================================================
+       11. ACTION FOOTBALLER CARD RENDERER (6 OUTFIELD STATS / 3 GK STATS)
+    ========================================================================= */
+    function getPositionTheme(pos) {
+      if (pos === "ATT") return { badge: "bg-gradient-to-r from-rose-600 to-amber-500 text-white", glow: "from-rose-600/35 via-amber-500/15 to-slate-950" };
+      if (pos === "MID") return { badge: "bg-gradient-to-r from-cyan-400 to-emerald-400 text-slate-950", glow: "from-cyan-500/35 via-emerald-600/15 to-slate-950" };
+      if (pos === "DEF") return { badge: "bg-gradient-to-r from-blue-500 to-indigo-500 text-white", glow: "from-blue-600/35 via-indigo-700/18 to-slate-950" };
+      return { badge: "bg-gradient-to-r from-violet-500 to-amber-400 text-slate-950", glow: "from-violet-600/35 via-amber-500/15 to-slate-950" };
+    }
+
+    function getActiveHighlightStatKeys(zone, role, pos) {
+      if (!zone || !role) return [];
+      if (role === "att") {
+        if (zone === 1) return ["spd"];
+        if (zone === 2) return ["dri"];
+        if (zone === 3) return ["ctl"];
+        if (zone === 4) return ["fin", "pwr"];
+      } else {
+        if (zone <= 3) return ["def"];
+        if (zone === 4 && pos === "GK") return ["div", "sav"];
+      }
+      return [];
+    }
+
+    function renderFootballerCardHTML(playerId, opts = {}) {
+      const p = PLAYER_MAP.get(playerId);
+      if (!p) return "";
+      queuePlayerImageFetch(playerId);
+
+      const {
+        size = "hand",        // "hand" | "arena" | "showcase"
+        selectable = false,
+        selected = false,
+        dimmed = false,
+        locked = false,
+        isCarrier = false,
+        stamina = 100,
+        boostSpent = 0,
+        highlightStats = [],
+        slamAnim = "",
+      } = opts;
+
+      const theme = getPositionTheme(p.pos);
+      const cachedUrl = imageCache.get(p.id);
+      const widthCls = size === "arena" ? "w-full" : size === "showcase" ? "w-[144px] sm:w-[162px]" : "w-[152px] sm:w-[164px] shrink-0";
+
+      const stamMod = p.pos === "GK" ? 0 : getStaminaPenalty(stamina);
+      const boostMod = (boostSpent || 0) * 2;
+      const netMod = stamMod + boostMod;
+      const stamInfo = getStaminaLabel(stamina);
+
+      const statKeys = p.pos === "GK"
+        ? [
+            { k: "div", l: "DIV" },
+            { k: "hnd", l: "HND" },
+            { k: "sav", l: "SAV" },
+          ]
+        : [
+            { k: "spd", l: "SPD" },
+            { k: "dri", l: "DRI" },
+            { k: "ctl", l: "CTL" },
+            { k: "fin", l: "FIN" },
+            { k: "pwr", l: "PWR" },
+            { k: "def", l: "DEF" },
+          ];
+
+      const clickAttr = selectable ? `onclick="selectHandCard('${p.id}')"` : "";
+      const cardClasses = [
+        "fc-card",
+        widthCls,
+        selectable ? "selectable" : "",
+        selected ? "selected" : "",
+        isCarrier && !selected ? "carrier-active" : "",
+        dimmed ? "dimmed" : "",
+        locked ? "locked-card" : "",
+        slamAnim,
+      ].join(" ");
+
+      return `
+        <div class="${cardClasses}" ${clickAttr} onmousemove="tiltCard(event, this)" onmouseleave="resetTilt(this)">
+          <div class="absolute inset-0 bg-gradient-to-b ${theme.glow} pointer-events-none"></div>
+          <div class="absolute inset-0 speed-lines opacity-45 pointer-events-none"></div>
+
+          <!-- Top Header: OVR, Position, Club/Flag, Info -->
+          <div class="relative z-10 flex items-start justify-between px-2.5 pt-2">
+            <div class="flex flex-col items-start leading-none">
+              <span class="font-mono font-extrabold text-xl sm:text-2xl text-white drop-shadow">${p.ovr}</span>
+              <span class="mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-extrabold tracking-wider ${theme.badge}">${p.pos}</span>
+            </div>
+
+            <div class="flex flex-col items-end gap-1">
+              <div class="flex items-center gap-1">
+                <span class="text-xs" title="${p.nat}">${p.flag}</span>
+                <span class="text-[9px] font-mono font-bold text-slate-300 bg-slate-950/80 px-1.5 py-0.5 rounded border border-white/10">${p.club}</span>
+              </div>
+              <button type="button" onclick="event.stopPropagation(); openInspectorModal('${p.id}')" title="Inspect Full Stats"
+                class="w-5 h-5 rounded-full bg-slate-950/85 hover:bg-amber-400 hover:text-slate-950 border border-white/20 text-[10px] font-bold text-slate-200 flex items-center justify-center transition">
+                i
+              </button>
+            </div>
+          </div>
+
+          <!-- Active Modifiers Badge (Booster / Carrier) -->
+          ${
+            boostMod > 0
+              ? `<div class="absolute top-2 left-1/2 -translate-x-1/2 z-30 px-1.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-mono font-extrabold text-[9px] shadow">⚡+${boostMod}</div>`
+              : isCarrier
+              ? `<div class="absolute top-2 left-1/2 -translate-x-1/2 z-30 px-1.5 py-0.5 rounded-full bg-emerald-400 text-slate-950 font-mono font-extrabold text-[8px] shadow">⚽ BALL</div>`
+              : ""
+          }
+
+          <!-- Portrait Stage -->
+          <div class="relative z-10 h-[88px] sm:h-[98px] flex items-end justify-center overflow-hidden -mt-2 px-1">
+            <div class="svg-fallback absolute inset-0 flex items-center justify-center transition-opacity duration-300 ${cachedUrl ? "opacity-15" : "opacity-100"}">
+              ${getActionFootballerSVG(p)}
+            </div>
+            <img data-player-img="${p.id}"
+              src="${cachedUrl || ""}"
+              alt="${p.name}"
+              class="relative z-10 h-full w-auto max-w-full object-contain object-bottom drop-shadow-[0_6px_12px_rgba(0,0,0,0.85)] transition-opacity duration-300 ${cachedUrl ? "opacity-100" : "opacity-0"}"
+              onerror="this.classList.add('opacity-0')" />
+            <div class="absolute inset-x-0 bottom-0 h-5 bg-gradient-to-t from-slate-950 to-transparent z-20 pointer-events-none"></div>
+          </div>
+
+          <!-- Red LOCKED (1 TURN) Overlay -->
+          ${
+            locked
+              ? `<div class="absolute inset-0 z-30 bg-rose-950/55 flex items-center justify-center pointer-events-none">
+                   <div class="px-2.5 py-1 rounded-lg bg-rose-600/95 border border-rose-200/50 text-white font-mono font-extrabold text-[10px] uppercase tracking-wider shadow-xl -rotate-6">
+                     🔒 LOCKED (1 TURN)
+                   </div>
+                 </div>`
+              : ""
+          }
+
+          <!-- Nameplate, Stamina Bar & 6-Stat (or 3-Stat GK) Grid -->
+          <div class="relative z-20 bg-slate-950/95 px-2 pt-1.5 pb-2 border-t border-white/10">
+            <div class="font-display font-bold text-[12px] text-white text-center truncate tracking-wide uppercase">
+              ${p.name}
+            </div>
+
+            <!-- Live Stamina Bar (Outfield cards) -->
+            ${
+              p.pos !== "GK" && size !== "showcase"
+                ? `<div class="mt-1 mb-1.5">
+                     <div class="flex items-center justify-between text-[8px] font-mono mb-0.5">
+                       <span class="${stamInfo.textCls} font-bold">${stamInfo.text}</span>
+                       <span class="text-slate-400">${stamina}%</span>
+                     </div>
+                     <div class="h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                       <div class="h-full ${stamInfo.bar} transition-all duration-500" style="width: ${stamina}%"></div>
+                     </div>
+                   </div>`
+                : `<div class="mt-1 mb-1.5 text-center text-[8px] font-mono text-purple-300/80">${p.pos === "GK" ? "🧤 NO STAMINA DRAIN" : "4-4-2 STAR"}</div>`
+            }
+
+            <!-- 6-Stat Outfield / 3-Stat GK Grid with Live Modifiers -->
+            <div class="grid grid-cols-3 gap-1">
+              ${statKeys
+                .map((s) => {
+                  const baseVal = p.stats[s.k];
+                  const effVal = Math.max(1, baseVal + netMod);
+                  const isActive = highlightStats.includes(s.k);
+                  const valColor =
+                    netMod > 0
+                      ? "text-emerald-300"
+                      : netMod < 0
+                      ? "text-rose-300"
+                      : isActive
+                      ? "text-amber-300"
+                      : "text-white";
+                  return `
+                    <div class="rounded-md px-1 py-0.5 border border-white/10 bg-slate-900/90 flex flex-col items-center leading-tight font-mono ${isActive ? "stat-active" : ""}">
+                      <span class="text-[8px] text-slate-400">${s.l}</span>
+                      <span class="text-[10px] font-extrabold ${valColor}">
+                        ${effVal}${netMod !== 0 ? `<span class="text-[7px] ml-0.5">${netMod > 0 ? `+${netMod}` : netMod}</span>` : ""}
+                      </span>
+                    </div>
+                  `;
+                })
+                .join("")}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    window.tiltCard = function (e, el) {
+      if (el.classList.contains("dimmed") || el.classList.contains("locked-card")) return;
+      const rect = el.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / rect.width - 0.5;
+      const y = (e.clientY - rect.top) / rect.height - 0.5;
+      const baseLift = el.classList.contains("selected") ? -10 : el.classList.contains("selectable") ? -7 : -3;
+      el.style.transform = `perspective(700px) translateY(${baseLift}px) rotateX(${(-y * 10).toFixed(1)}deg) rotateY(${(x * 12).toFixed(1)}deg) scale(1.03)`;
+    };
+
+    window.resetTilt = function (el) {
+      el.style.transform = "";
+    };
+
+    /* =========================================================================
+       12. MASTER GAME UI RENDERER
+    ========================================================================= */
+    function enterGameView() {
+      document.getElementById("lobbyView").classList.add("hidden");
+      document.getElementById("gameView").classList.remove("hidden");
+      document.getElementById("headerScoreboard").classList.remove("hidden");
+      document.getElementById("headerScoreboard").classList.add("flex");
+      document.getElementById("btnLeaveMatch").classList.remove("hidden");
+    }
+
+    function renderBoosterPips(count) {
+      let html = "";
+      for (let i = 1; i <= 10; i++) {
+        const active = i <= count;
+        html += `<span class="w-2 h-3 rounded-sm transition-all ${active ? "bg-amber-400 shadow-[0_0_8px_#fbbf24]" : "bg-slate-800 border border-white/10"}"></span>`;
+      }
+      return html;
+    }
+
+    function renderGame() {
+      if (!gameState) return;
+      const state = gameState;
+      const viewerSide = getActiveSide();
+      const oppSide = viewerSide === "p1" ? "p2" : "p1";
+      const me = state[viewerSide];
+      const opp = state[oppSide];
+      const iAmAttacker = state.attackerSide === viewerSide;
+
+      // 1. Header Scoreboard & Team OVR Balance
+      document.getElementById("hdrP1Name").textContent = me.name;
+      document.getElementById("hdrP1Score").textContent = me.score;
+      document.getElementById("hdrP1Role").textContent = iAmAttacker ? "⚔️ ATT" : "🛡️ DEF";
+      document.getElementById("hdrP1Ovr").textContent = `OVR ${me.avgOvr}`;
+      document.getElementById("hdrP2Name").textContent = opp.name;
+      document.getElementById("hdrP2Score").textContent = opp.score;
+      document.getElementById("hdrP2Role").textContent = iAmAttacker ? "🛡️ DEF" : "⚔️ ATT";
+      document.getElementById("hdrP2Ovr").textContent = `OVR ${opp.avgOvr}`;
+      document.getElementById("hdrTargetBadge").textContent = `FIRST TO ${state.targetGoals}`;
+
+      const ovrDiff = Math.abs(me.avgOvr - opp.avgOvr).toFixed(1);
+      document.getElementById("teamBalanceHudBadge").textContent = `⚖️ OVR ${me.avgOvr} vs ${opp.avgOvr} (Δ${ovrDiff})`;
+
+      const roomBadge = document.getElementById("hdrRoomBadge");
+      if (state.mode === "online") {
+        roomBadge.textContent = `ROOM: ${state.roomCode} 📋`;
+        roomBadge.onclick = () => copyInviteLink(state.roomCode);
+      } else {
+        roomBadge.textContent = state.mode === "ai" ? "VS AI" : "LOCAL 1v1";
+        roomBadge.onclick = null;
+      }
+
+      // 2. Opponent Strip, Boosters & Visible GK
+      document.getElementById("oppLabelName").textContent = opp.name;
+      const oppRoleBadge = document.getElementById("oppRoleBadge");
+      oppRoleBadge.textContent = iAmAttacker ? "DEFENDING" : "ATTACKING";
+      oppRoleBadge.className = iAmAttacker
+        ? "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-rose-500/20 text-rose-300 border border-rose-400/30"
+        : "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30";
+
+      const oppReadyState = iAmAttacker ? state.defReady : state.attReady;
+      document.getElementById("oppTurnIndicator").className = oppReadyState
+        ? "w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399]"
+        : "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
+
+      document.getElementById("oppBoosterCount").textContent = opp.boosters || 0;
+      document.getElementById("oppBoosterPips").innerHTML = renderBoosterPips(opp.boosters || 0);
+
+      const oppGk = PLAYER_MAP.get(getPlayerGkId(opp));
+      if (oppGk) {
+        document.getElementById("oppGkSummaryText").textContent = `${oppGk.name} (DIV ${oppGk.stats.div} • HND ${oppGk.stats.hnd} • SAV ${oppGk.stats.sav})`;
+      }
+
+      document.getElementById("oppHandRow").innerHTML = opp.hand
+        .map((id) => {
+          const card = PLAYER_MAP.get(id);
+          const locked = isCardLocked(opp, id, state.duelCount);
+          const isOnPitch = (state.phase === "clash" && (id === state.activeAttId || id === state.activeDefId)) || (!iAmAttacker && state.zone > 1 && id === state.ballCarrierId);
+          return `
+            <div class="fc-card-back w-10 h-13 sm:w-11 sm:h-14 rounded-lg shrink-0 flex flex-col items-center justify-center relative py-1 ${locked ? "opacity-40 border-rose-500/60" : ""} ${isOnPitch ? "ring-2 ring-amber-400 scale-105" : ""}">
+              <span class="text-[8px] font-mono font-bold text-slate-400">${card.pos}</span>
+              <span class="text-xs ${isOnPitch ? "text-amber-300" : locked ? "text-rose-400" : "text-slate-300"}">${locked ? "🔒" : isOnPitch ? "⚡" : "⚽"}</span>
+            </div>
+          `;
+        })
+        .join("");
+
+      // 3. Animated Pitch Radar & 4 Zones
+      const zonePercent = state.zone === 1 ? 14 : state.zone === 2 ? 39 : state.zone === 3 ? 65 : 90;
+      document.getElementById("radarProgressFill").style.width = `${zonePercent}%`;
+      document.getElementById("radarBallMarker").style.left = `${zonePercent}%`;
+
+      for (let z = 1; z <= 4; z++) {
+        const el = document.getElementById(`zone${z}`);
+        if (z < state.zone) {
+          el.className = "zone-pill rounded-xl px-2 py-1.5 border border-emerald-400/60 bg-emerald-500/20 text-emerald-200 text-center transition-all";
+        } else if (z === state.zone) {
+          el.className = "zone-pill rounded-xl px-2 py-1.5 border-2 border-amber-400 bg-amber-500/20 text-amber-200 text-center shadow-[0_0_20px_rgba(245,158,11,0.3)] scale-[1.03] transition-all";
+        } else {
+          el.className = "zone-pill rounded-xl px-2 py-1.5 border border-white/10 bg-slate-950/65 text-slate-400 text-center transition-all";
+        }
+      }
+
+      // 4. Arena Duel Cards, Booster Spender & Long-Shot Preview
+      const attOwnerName = state[state.attackerSide].name;
+      const defOwnerName = state[getDefenderSide(state)].name;
+      document.getElementById("arenaAttOwner").textContent = `(${attOwnerName})`;
+      document.getElementById("arenaDefOwner").textContent = `(${defOwnerName})`;
+
+      const zoneHints = {
+        1: "Zone 1 Press: Carrier SPD vs Opp ATT DEF (or ⚡ Long Shot)",
+        2: "Zone 2 Midfield: Carrier DRI vs Opp MID DEF (or Pass / ⚡ Long Shot)",
+        3: "Zone 3 Edge of Box: Carrier CTL vs Opp DEF DEF (or Pass / ⚡ Long Shot)",
+        4: "Zone 4 Close to Goal: Carrier FIN+PWR vs GK DIV+SAV",
+      };
+      document.getElementById("duelRuleHint").textContent = zoneHints[state.zone];
+
+      const attSlot = document.getElementById("arenaAttSlot");
+      const defSlot = document.getElementById("arenaDefSlot");
+      const vsOrb = document.getElementById("vsOrbPanel");
+      const clashPanel = document.getElementById("clashScorePanel");
+      const boosterPanel = document.getElementById("boosterSpenderPanel");
+      const longShotPanel = document.getElementById("longShotPreviewPanel");
+      const actionsBox = document.getElementById("arenaActions");
+      const promptBadge = document.getElementById("arenaPromptBadge");
+
+      if (state.phase === "clash" && state.lastDuelResult) {
+        const res = state.lastDuelResult;
+        vsOrb.classList.add("hidden");
+        boosterPanel.classList.add("hidden");
+        longShotPanel.classList.add("hidden");
+        clashPanel.classList.remove("hidden");
+
+        if (lastPlayedClashKey !== res.key) {
+          lastPlayedClashKey = res.key;
+          playSfx("kick");
+          setTimeout(() => {
+            if (res.isGoal) {
+              playSfx("goal");
+              triggerGoalCelebration(res.scorerName, res.isLongShot);
+            } else if (res.winner === "att") {
+              playSfx("winDuel");
+            } else {
+              playSfx(res.zone === 4 || res.isLongShot ? "save" : "kick");
+            }
+          }, 200);
+        }
+
+        const attPlayerObj = state[state.attackerSide];
+        const defPlayerObj = state[getDefenderSide(state)];
+        const attHl = res.isLongShot ? ["fin", "pwr"] : getActiveHighlightStatKeys(res.zone, "att", "ATT");
+        const defHl = res.isLongShot ? ["div", "hnd", "sav"] : getActiveHighlightStatKeys(res.zone, "def", PLAYER_MAP.get(res.defId)?.pos);
+
+        attSlot.className = "w-[164px] sm:w-[184px] flex items-center justify-center";
+        defSlot.className = "w-[164px] sm:w-[184px] flex items-center justify-center";
+        attSlot.innerHTML = renderFootballerCardHTML(res.attId, {
+          size: "arena",
+          stamina: attPlayerObj.stamina[res.attId] ?? 100,
+          boostSpent: res.attBoostSpent,
+          highlightStats: attHl,
+          slamAnim: "animate-slam-left",
+        });
+        defSlot.innerHTML = renderFootballerCardHTML(res.defId, {
+          size: "arena",
+          stamina: defPlayerObj.stamina[res.defId] ?? 100,
+          boostSpent: res.defBoostSpent,
+          highlightStats: defHl,
+          slamAnim: "animate-slam-right",
+        });
+
+        const hlEl = document.getElementById("clashHeadline");
+        hlEl.textContent = res.headline;
+        hlEl.className = res.isGoal
+          ? "font-display font-bold text-2xl sm:text-3xl tracking-wider uppercase mb-1 text-amber-300"
+          : res.winner === "att"
+          ? "font-display font-bold text-xl sm:text-2xl tracking-wide uppercase mb-1 text-emerald-400"
+          : "font-display font-bold text-xl sm:text-2xl tracking-wide uppercase mb-1 text-rose-400";
+        document.getElementById("clashDetail").textContent = res.detail;
+
+        // Breakdown area: either Long-Shot 3 Checks or Standard Stat Tug-of-War
+        const bdEl = document.getElementById("clashBreakdownArea");
+        if (res.isLongShot && res.longShotReport) {
+          bdEl.innerHTML = res.longShotReport.checks
+            .map(
+              (c) => `
+              <div class="flex items-center justify-between px-2.5 py-1 rounded-lg text-[11px] font-mono ${c.pass ? "bg-emerald-500/15 border border-emerald-400/35 text-emerald-200" : "bg-rose-500/15 border border-rose-400/35 text-rose-200"}">
+                <span>${c.label}</span>
+                <span class="font-bold">${c.attVal} vs ${c.target} ${c.pass ? "✅" : "❌"}</span>
+              </div>
+            `
+            )
+            .join("");
+        } else {
+          const total = Math.max(1, res.attVal + res.defVal);
+          const attPct = Math.max(15, Math.min(85, Math.round((res.attVal / total) * 100)));
+          bdEl.innerHTML = `
+            <div class="flex items-center justify-between text-xs font-mono font-bold">
+              <span class="text-emerald-400">${res.attLabel}</span>
+              <span class="text-slate-500 text-[10px]">VS</span>
+              <span class="text-rose-400">${res.defLabel}</span>
+            </div>
+            <div class="h-3.5 rounded-full bg-slate-800 overflow-hidden flex border border-white/10">
+              <div class="h-full bg-gradient-to-r from-emerald-500 to-lime-400 transition-all duration-700" style="width: ${attPct}%"></div>
+              <div class="h-full bg-gradient-to-r from-rose-500 to-orange-500 transition-all duration-700" style="width: ${100 - attPct}%"></div>
+            </div>
+            <div class="text-[10px] font-mono text-slate-400 pt-0.5">${res.mathNote}</div>
+          `;
+        }
+
+        promptBadge.textContent = res.isGoal
+          ? "⚽ GOAL SCORED! Kick-off restarts with conceding team"
+          : res.possessionFlips
+          ? "🔄 POSSESSION FLIPS! Defending team earned +1 ⚡ Stat Booster"
+          : `🔥 ZONE ${res.zone} CLEARED! Advancing to Zone ${res.zone + 1}`;
+
+        const nextBtnText = res.isGoal
+          ? "Next Kick-off →"
+          : res.possessionFlips
+          ? "Flip Possession →"
+          : `Advance to Zone ${res.zone + 1} →`;
+
+        actionsBox.innerHTML = `
+          <button onclick="continueAfterClash()" class="btn-action px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 via-orange-500 to-rose-500 text-slate-950 font-extrabold text-sm uppercase tracking-wide shadow-lg shadow-amber-500/30">
+            ${nextBtnText}
+          </button>
+        `;
+      } else {
+        // SELECTION PHASE
+        vsOrb.classList.remove("hidden");
+        clashPanel.classList.add("hidden");
+
+        const myLocked = iAmAttacker ? state.attReady : state.defReady;
+
+        // Render Attacker Preview Slot
+        if (iAmAttacker && (selectedCardId || state.pendingAttId)) {
+          const previewId = state.attReady ? state.pendingAttId : selectedCardId;
+          const bSpent = state.attReady ? state.pendingAttBoost : pendingBoost;
+          attSlot.className = "w-[164px] sm:w-[184px] flex items-center justify-center";
+          attSlot.innerHTML = renderFootballerCardHTML(previewId, {
+            size: "arena",
+            stamina: me.stamina[previewId] ?? 100,
+            boostSpent: bSpent,
+            isCarrier: previewId === state.ballCarrierId,
+            highlightStats: getActiveHighlightStatKeys(state.zone, "att", "ATT"),
+          });
+        } else if (!iAmAttacker && state.zone > 1 && state.ballCarrierId) {
+          // Defender can see who currently holds the ball in Zones 2-4 (may still be passed!)
+          attSlot.className = "w-[164px] sm:w-[184px] flex items-center justify-center relative";
+          attSlot.innerHTML =
+            renderFootballerCardHTML(state.ballCarrierId, {
+              size: "arena",
+              stamina: opp.stamina[state.ballCarrierId] ?? 100,
+              isCarrier: true,
+              highlightStats: getActiveHighlightStatKeys(state.zone, "att", "ATT"),
+            }) +
+            (state.attReady
+              ? `<div class="absolute bottom-2 inset-x-2 z-30 text-center py-0.5 rounded bg-emerald-500/90 text-slate-950 font-mono font-bold text-[9px]">🔒 MOVE LOCKED</div>`
+              : "");
+        } else {
+          attSlot.className = "w-[164px] sm:w-[184px] min-h-[252px] rounded-2xl border-2 border-dashed border-emerald-400/35 bg-slate-950/60 flex flex-col items-center justify-center p-3 text-center";
+          attSlot.innerHTML = state.attReady
+            ? `<div class="text-4xl mb-2">🔒</div><div class="text-xs font-bold text-emerald-300 uppercase">Attacker Ready!</div><div class="text-[11px] text-slate-400 mt-1">Reveals on clash</div>`
+            : `<div class="text-3xl opacity-50 mb-1">⚽</div><div class="text-xs text-slate-300 font-semibold">${iAmAttacker ? "Pick ANY outfield card below" : `${attOwnerName} choosing...`}</div>`;
+        }
+
+        // Render Defender Preview Slot
+        if (!iAmAttacker && (selectedCardId || state.pendingDefId)) {
+          const previewId = state.defReady ? state.pendingDefId : selectedCardId;
+          const bSpent = state.defReady ? state.pendingDefBoost : pendingBoost;
+          const pObj = PLAYER_MAP.get(previewId);
+          defSlot.className = "w-[164px] sm:w-[184px] flex items-center justify-center";
+          defSlot.innerHTML = renderFootballerCardHTML(previewId, {
+            size: "arena",
+            stamina: me.stamina[previewId] ?? 100,
+            boostSpent: bSpent,
+            highlightStats: getActiveHighlightStatKeys(state.zone, "def", pObj?.pos),
+          });
+        } else if (iAmAttacker && state.zone === 4) {
+          // Attacker in Zone 4 sees Opponent GK waiting in goal!
+          const gkId = getPlayerGkId(opp);
+          defSlot.className = "w-[164px] sm:w-[184px] flex items-center justify-center relative";
+          defSlot.innerHTML =
+            renderFootballerCardHTML(gkId, {
+              size: "arena",
+              highlightStats: ["div", "sav"],
+            }) +
+            (state.defReady
+              ? `<div class="absolute bottom-2 inset-x-2 z-30 text-center py-0.5 rounded bg-rose-500/90 text-white font-mono font-bold text-[9px]">🔒 GK READY</div>`
+              : "");
+        } else {
+          const reqPos = getRequiredDefPos(state.zone);
+          defSlot.className = "w-[164px] sm:w-[184px] min-h-[252px] rounded-2xl border-2 border-dashed border-rose-400/35 bg-slate-950/60 flex flex-col items-center justify-center p-3 text-center";
+          defSlot.innerHTML = state.defReady
+            ? `<div class="text-4xl mb-2">🔒</div><div class="text-xs font-bold text-rose-300 uppercase">Defender Locked!</div><div class="text-[11px] text-slate-400 mt-1">Reveals on clash</div>`
+            : `<div class="text-3xl opacity-50 mb-1">🛡️</div><div class="text-xs text-slate-300 font-semibold">${!iAmAttacker ? `Pick a ${reqPos} below` : `${defOwnerName} picking ${reqPos}...`}</div>`;
+        }
+
+        // Booster Spender Control (Shown if player hasn't locked yet and has a card selected)
+        if (!myLocked) {
+          boosterPanel.classList.remove("hidden");
+          document.getElementById("pendingBoostVal").textContent = pendingBoost;
+          document.getElementById("availBoostMax").textContent = me.boosters || 0;
+          document.getElementById("boosterEffectPreview").textContent = pendingBoost > 0 ? `+${pendingBoost * 2} TO ALL STATS` : "+0 STATS";
+        } else {
+          boosterPanel.classList.add("hidden");
+        }
+
+        // Live Long-Shot Feasibility Preview (Attacker in Zones 1, 2, or 3 with a selected card)
+        if (!myLocked && iAmAttacker && state.zone < 4 && selectedCardId) {
+          const oppGkId = getPlayerGkId(opp);
+          const ls = evaluateLongShot(me, selectedCardId, pendingBoost, oppGkId, 0);
+          longShotPanel.classList.remove("hidden");
+          document.getElementById("lsGkName").textContent = ls.gkName;
+          const verdictEl = document.getElementById("lsOverallVerdict");
+          verdictEl.textContent = ls.success ? "⚡ GOAL READY!" : "NEEDS MORE BOOST";
+          verdictEl.className = ls.success
+            ? "px-1.5 py-0.5 rounded font-extrabold text-[9px] bg-emerald-500/25 text-emerald-300 border border-emerald-400/40"
+            : "px-1.5 py-0.5 rounded font-extrabold text-[9px] bg-rose-500/20 text-rose-300 border border-rose-400/35";
+
+          document.getElementById("lsChecksList").innerHTML = ls.checks
+            .map(
+              (c) => `
+              <div class="flex items-center justify-between ${c.pass ? "text-emerald-300" : "text-slate-300"}">
+                <span>${c.label}</span>
+                <span class="font-bold">${c.attVal} vs ${c.target} ${c.pass ? "✅" : `(${c.diff}) ❌`}</span>
+              </div>
+            `
+            )
+            .join("");
+        } else {
+          longShotPanel.classList.add("hidden");
+        }
+
+        // Prompt Badge & Action Buttons
+        if (myLocked) {
+          promptBadge.textContent = `⏳ Selection Locked! Waiting for ${opp.name}...`;
+          actionsBox.innerHTML = `
+            <div class="px-4 py-2 rounded-xl bg-slate-950/85 border border-emerald-400/35 text-emerald-300 text-xs font-bold flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Ready for Clash
+            </div>
+          `;
+        } else if (iAmAttacker) {
+          const isPassing = state.zone > 1 && selectedCardId && state.ballCarrierId && selectedCardId !== state.ballCarrierId;
+          const selName = selectedCardId ? PLAYER_MAP.get(selectedCardId).name : "";
+          if (state.zone === 4) {
+            promptBadge.textContent = isPassing
+              ? `🔥 ZONE 4: Cutback Pass to ${selName} & Shoot Close-Range!`
+              : "🔥 ZONE 4 — CLOSE TO GOAL! Shoot with carrier or tap another outfielder to Pass!";
+            actionsBox.innerHTML = `
+              <button onclick="confirmTurnAction('closeshot')" ${!selectedCardId ? "disabled" : ""} class="btn-action px-6 py-3 rounded-xl bg-gradient-to-r from-amber-400 via-orange-500 to-rose-600 text-slate-950 font-extrabold text-sm uppercase shadow-lg shadow-amber-500/35">
+                🔥 ${isPassing ? "Pass & Shoot!" : "Shoot Close-Range!"}
+              </button>
+            `;
+          } else {
+            const actionLabel =
+              state.zone === 1
+                ? "🚀 Attack Press"
+                : isPassing
+                ? `🎯 Pass & Dribble`
+                : `⚡ Dribble Zone ${state.zone}`;
+            promptBadge.textContent =
+              state.zone === 1
+                ? "⚔️ ZONE 1: Pick ANY unlocked outfielder (ATT/MID/DEF) to break the press — or fire a Long Shot!"
+                : `⚔️ ZONE ${state.zone}: Continue with carrier, tap any teammate to PASS, or unleash a ⚡ LONG SHOT!`;
+
+            actionsBox.innerHTML = `
+              <button onclick="confirmTurnAction('advance')" ${!selectedCardId ? "disabled" : ""} class="btn-action px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-400 to-cyan-500 text-slate-950 font-extrabold text-xs sm:text-sm uppercase shadow-lg shadow-emerald-500/25">
+                ${actionLabel}
+              </button>
+              <button onclick="confirmTurnAction('longshot')" ${!selectedCardId ? "disabled" : ""} class="btn-action px-4 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 via-orange-500 to-amber-400 text-slate-950 font-extrabold text-xs sm:text-sm uppercase shadow-lg shadow-rose-500/30">
+                ⚡ Long Shot (-28%)
+              </button>
+            `;
+          }
+        } else {
+          // Defending player
+          const reqPos = getRequiredDefPos(state.zone);
+          if (state.zone === 4) {
+            promptBadge.textContent = "🧤 ZONE 4 DEFENSE: Dial in Boosters for your Goalkeeper and Lock In!";
+            actionsBox.innerHTML = `
+              <button onclick="confirmTurnAction('defend')" class="btn-action px-6 py-3 rounded-xl bg-gradient-to-r from-violet-500 to-amber-400 text-slate-950 font-extrabold text-sm uppercase shadow-lg">
+                🧤 Lock Goalkeeper
+              </button>
+            `;
+          } else {
+            const lineLabels = { ATT: "Attacker (2 ATTs)", MID: "Midfielder (4 MIDs)", DEF: "Defender (4 DEFs)" };
+            promptBadge.textContent = `🛡️ ZONE ${state.zone} DEFENSE: Pick an unlocked ${lineLabels[reqPos]}!`;
+            actionsBox.innerHTML = `
+              <button onclick="confirmTurnAction('defend')" ${!selectedCardId ? "disabled" : ""} class="btn-action px-6 py-3 rounded-xl bg-gradient-to-r from-rose-500 to-orange-500 text-white font-extrabold text-sm uppercase shadow-lg shadow-rose-500/30">
+                🛡️ Lock Defender
+              </button>
+            `;
+          }
+        }
+      }
+
+      // 5. Commentary Ticker & Drawer
+      if (state.commentary.length > 0) {
+        document.getElementById("latestCommentary").textContent = state.commentary[0].text;
+        document.getElementById("commentaryDrawer").innerHTML = state.commentary
+          .map((c) => {
+            const color = c.type === "goal" ? "text-amber-300 font-bold" : c.type === "att" ? "text-emerald-300" : c.type === "def" ? "text-rose-300" : "text-slate-300";
+            return `<div class="flex gap-2"><span class="font-mono text-slate-500 shrink-0">[T${c.turn}·Z${c.zone}]</span><span class="${color}">${c.text}</span></div>`;
+          })
+          .join("");
+      }
+
+      // 6. My Squad Hand & Stackable Booster Gauge
+      document.getElementById("myLabelName").textContent = `${me.name}'s 4-4-2 XI`;
+      const myRole = document.getElementById("myRoleBadge");
+      myRole.textContent = iAmAttacker ? "⚔️ ATTACKING" : "🛡️ DEFENDING";
+      myRole.className = iAmAttacker
+        ? "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30"
+        : "px-2 py-0.5 rounded-md text-[10px] font-bold uppercase bg-rose-500/20 text-rose-300 border border-rose-400/30";
+
+      document.getElementById("myBoosterCount").textContent = me.boosters || 0;
+      document.getElementById("myBoosterPips").innerHTML = renderBoosterPips(me.boosters || 0);
+
+      const helperBar = document.getElementById("handHelperBar");
+      if (state.phase === "select" && iAmAttacker && state.zone > 1 && !state.attReady) {
+        helperBar.classList.remove("hidden");
+        const cName = PLAYER_MAP.get(state.ballCarrierId)?.name || "Carrier";
+        helperBar.textContent = `💡 Ball Carrier: ${cName}. Tap ANY other unlocked outfield card (ATT, MID, or DEF) to pass for fresher stamina or better stats!`;
+      } else {
+        helperBar.classList.add("hidden");
+      }
+
+      renderMyFilterTabs(me, state, viewerSide);
+      renderMyHand(me, state, viewerSide);
+
+      // 7. Match Finished Modal
+      if (state.status === "finished") {
+        openMatchOverModal(state, viewerSide);
+      } else {
+        document.getElementById("matchOverModal").classList.add("hidden");
+      }
+    }
+
+    function renderMyFilterTabs(me, state, side) {
+      const isAtt = side === state.attackerSide;
+      const reqDefPos = !isAtt && state.phase === "select" ? getRequiredDefPos(state.zone) : null;
+      const counts = { ALL: me.hand.length, ATT: 0, MID: 0, DEF: 0, GK: 0 };
+      me.hand.forEach((id) => counts[PLAYER_MAP.get(id).pos]++);
+
+      const tabs = ["ALL", "ATT", "MID", "DEF", "GK"];
+      document.getElementById("myFilterTabs").innerHTML = tabs
+        .map((t) => {
+          const active = handPosFilter === t;
+          const isReq = reqDefPos === t;
+          return `
+            <button onclick="setHandFilter('${t}')" class="px-2.5 py-1 rounded-lg border transition font-bold ${
+              active
+                ? "bg-amber-400 text-slate-950 border-amber-300"
+                : isReq
+                ? "bg-amber-500/20 text-amber-200 border-amber-400/65 animate-pulse"
+                : "bg-slate-950 text-slate-400 border-white/10 hover:text-white"
+            }">
+              ${t} (${counts[t]})
+            </button>
+          `;
+        })
+        .join("");
+    }
+
+    window.setHandFilter = function (pos) {
+      handPosFilter = pos;
+      renderGame();
+    };
+
+    function renderMyHand(me, state, side) {
+      const isAtt = side === state.attackerSide;
+      const myLocked = isAtt ? state.attReady : state.defReady;
+      const eligible = state.phase === "select" && !myLocked ? getEligibleCardsForTurn(state, side, false) : [];
+
+      const visibleIds = handPosFilter === "ALL"
+        ? me.hand
+        : me.hand.filter((id) => PLAYER_MAP.get(id).pos === handPosFilter);
+
+      // Float eligible cards to the front in ALL view for quick tapping
+      const sortedIds = [...visibleIds].sort((a, b) => {
+        const aEl = eligible.includes(a) ? 0 : 1;
+        const bEl = eligible.includes(b) ? 0 : 1;
+        return aEl - bEl;
+      });
+
+      const roleForHighlight = isAtt ? "att" : "def";
+
+      document.getElementById("myHandContainer").innerHTML = sortedIds
+        .map((id) => {
+          const p = PLAYER_MAP.get(id);
+          const isEligible = eligible.includes(id);
+          const cardLocked = isCardLocked(me, id, state.duelCount);
+          const isSelected = selectedCardId === id;
+          const isCarrier = isAtt && state.zone > 1 && id === state.ballCarrierId;
+          const shouldDim = state.phase === "select" && !myLocked && !isEligible && !cardLocked;
+          const hlStats = isEligible ? getActiveHighlightStatKeys(state.zone, roleForHighlight, p.pos) : [];
+
+          return renderFootballerCardHTML(id, {
+            size: "hand",
+            selectable: isEligible,
+            selected: isSelected,
+            dimmed: shouldDim,
+            locked: cardLocked,
+            isCarrier,
+            stamina: me.stamina[id] ?? 100,
+            boostSpent: isSelected ? pendingBoost : 0,
+            highlightStats: hlStats,
+          });
+        })
+        .join("");
+    }
+
+    /* =========================================================================
+       13. MODALS, INSPECTOR, GOAL CELEBRATION & UTILITIES
+    ========================================================================= */
+    window.inspectOpponentGk = function () {
+      if (!gameState) return;
+      const oppSide = getActiveSide() === "p1" ? "p2" : "p1";
+      const gkId = getPlayerGkId(gameState[oppSide]);
+      if (gkId) openInspectorModal(gkId);
+    };
+
+    window.openInspectorModal = function (playerId) {
+      const p = PLAYER_MAP.get(playerId);
+      if (!p) return;
+      playSfx("select");
+
+      const statRows = p.pos === "GK"
+        ? [
+            { name: "Diving (DIV)", val: p.stats.div, color: "from-violet-500 to-fuchsia-400" },
+            { name: "Ball Handling (HND)", val: p.stats.hnd, color: "from-amber-400 to-yellow-300" },
+            { name: "Saving (SAV)", val: p.stats.sav, color: "from-cyan-400 to-emerald-400" },
+          ]
+        : [
+            { name: "Speed (SPD) — Zone 1 Press", val: p.stats.spd, color: "from-amber-400 to-orange-500" },
+            { name: "Dribbling (DRI) — Zone 2 Midfield", val: p.stats.dri, color: "from-cyan-400 to-blue-500" },
+            { name: "Ball Control (CTL) — Zone 3 Box", val: p.stats.ctl, color: "from-emerald-400 to-teal-500" },
+            { name: "Finishing (FIN) — Shots", val: p.stats.fin, color: "from-rose-500 to-pink-500" },
+            { name: "Shot Power (PWR) — Shots & Long Range", val: p.stats.pwr, color: "from-orange-500 to-red-500" },
+            { name: "Defending (DEF) — Tackling & Winning", val: p.stats.def, color: "from-indigo-400 to-blue-500" },
+          ];
+
+      const extraNote = p.pos === "GK"
+        ? `Close-Range Save Total: <strong class="text-cyan-300">${p.stats.div + p.stats.sav}</strong> • Long-Shot Thresholds: PWR≥${Math.max(p.stats.sav, p.stats.hnd) + 5}, FIN≥${p.stats.div + 5}`
+        : `Zone 4 Close-Range Strike: <strong class="text-rose-300">${p.stats.fin + p.stats.pwr}</strong> (FIN+PWR) • Can carry, pass & score from any zone!`;
+
+      document.getElementById("inspectorContent").innerHTML = `
+        <div class="flex flex-col sm:flex-row gap-5 items-center sm:items-start">
+          <div class="shrink-0">${renderFootballerCardHTML(p.id, { size: "showcase" })}</div>
+          <div class="flex-1 w-full space-y-2.5">
+            <div>
+              <div class="text-xs font-mono text-slate-400">${p.flag} ${p.nat} • ${p.club} • #${p.num}</div>
+              <h3 class="font-display font-bold text-2xl text-white uppercase">${p.name}</h3>
+              <p class="text-[11px] text-slate-300 mt-1">${extraNote}</p>
+            </div>
+            <div class="space-y-2 pt-1">
+              ${statRows
+                .map(
+                  (r) => `
+                <div>
+                  <div class="flex justify-between text-xs font-mono mb-0.5">
+                    <span class="text-slate-300">${r.name}</span>
+                    <span class="font-extrabold text-white">${r.val}</span>
+                  </div>
+                  <div class="h-2 rounded-full bg-slate-800 overflow-hidden">
+                    <div class="h-full rounded-full bg-gradient-to-r ${r.color}" style="width: ${r.val}%"></div>
+                  </div>
+                </div>
+              `
+                )
+                .join("")}
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById("inspectorModal").classList.remove("hidden");
+    };
+
+    window.closeInspectorModal = function () {
+      document.getElementById("inspectorModal").classList.add("hidden");
+    };
+
+    function triggerGoalCelebration(scorerName, isLongShot) {
+      const overlay = document.getElementById("goalOverlay");
+      document.getElementById("goalEmoji").textContent = isLongShot ? "⚡🚀⚽" : "⚽🔥";
+      document.getElementById("goalMainTitle").textContent = isLongShot ? "THUNDERBOLT!!!" : "GOAL!!!";
+      document.getElementById("goalScorerBanner").textContent = `${scorerName} BURIES IT!`;
+      overlay.classList.remove("hidden");
+      setTimeout(() => overlay.classList.add("hidden"), 1950);
+    }
+
+    function openMatchOverModal(state, viewerSide) {
+      const modal = document.getElementById("matchOverModal");
+      if (!modal.classList.contains("hidden")) return;
+
+      const iWon = state.winnerSide === viewerSide;
+      document.getElementById("matchOverTrophy").textContent = iWon ? "🏆" : "⚽";
+      document.getElementById("matchOverHeadline").textContent =
+        state.mode === "local"
+          ? `${state[state.winnerSide].name} WINS!`
+          : iWon
+          ? "VICTORY!"
+          : "DEFEAT";
+
+      document.getElementById("endP1Name").textContent = `${state.p1.name} (${state.p1.avgOvr})`;
+      document.getElementById("endP1Score").textContent = state.p1.score;
+      document.getElementById("endP2Name").textContent = `${state.p2.name} (${state.p2.avgOvr})`;
+      document.getElementById("endP2Score").textContent = state.p2.score;
+
+      document.getElementById("matchStatsSummary").innerHTML = `
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-white/10">
+          <div class="text-slate-400 text-[10px]">DUELS WON</div>
+          <div class="text-white font-bold text-sm mt-0.5">${state.p1.duelsWon || 0} - ${state.p2.duelsWon || 0}</div>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-white/10">
+          <div class="text-slate-400 text-[10px]">LONG GOALS</div>
+          <div class="text-amber-300 font-bold text-sm mt-0.5">${state.p1.longGoals || 0} - ${state.p2.longGoals || 0}</div>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-950 border border-white/10">
+          <div class="text-slate-400 text-[10px]">GK SAVES</div>
+          <div class="text-cyan-300 font-bold text-sm mt-0.5">${state.p1.savesMade || 0} - ${state.p2.savesMade || 0}</div>
+        </div>
+      `;
+
+      modal.classList.remove("hidden");
+      playSfx("goal");
+    }
+
+    window.triggerRematch = async function () {
+      if (!gameState) return;
+      playSfx("whistle");
+      const fresh = createInitialMatchState(
+        gameState.mode,
+        gameState.roomCode,
+        gameState.p1.uid,
+        gameState.p1.name,
+        gameState.p2.uid,
+        gameState.p2.name,
+        gameState.targetGoals
+      );
+      fresh.status = "playing";
+      gameState = fresh;
+      localViewerSide = "p1";
+      handPosFilter = "ALL";
+      lastPlayedClashKey = "";
+      document.getElementById("matchOverModal").classList.add("hidden");
+      [...fresh.p1.hand, ...fresh.p2.hand].forEach(queuePlayerImageFetch);
+      resetLocalSelectionDefaults();
+      await commitStateMutation();
+    };
+
+    function showPrivacyVeil(playerName, subText) {
+      document.getElementById("privacyVeilTitle").textContent = `Pass Device to ${playerName}`;
+      document.getElementById("privacyVeilSub").textContent = subText;
+      document.getElementById("privacyVeilModal").classList.remove("hidden");
+    }
+
+    window.dismissPrivacyVeil = function () {
+      document.getElementById("privacyVeilModal").classList.add("hidden");
+      playSfx("select");
+      renderGame();
+    };
+
+    window.openRulesModal = () => document.getElementById("rulesModal").classList.remove("hidden");
+    window.closeRulesModal = () => document.getElementById("rulesModal").classList.add("hidden");
+    window.toggleCommentaryDrawer = () => document.getElementById("commentaryDrawer").classList.toggle("hidden");
+    window.requestLeaveMatch = () => document.getElementById("exitConfirmModal").classList.remove("hidden");
+    window.closeExitConfirm = () => document.getElementById("exitConfirmModal").classList.add("hidden");
+
+    window.exitToLobby = function () {
+      clearTimeout(aiTimeoutId);
+      if (roomUnsubscribe) {
+        roomUnsubscribe();
+        roomUnsubscribe = null;
+      }
+      gameState = null;
+      hostingRoomCode = null;
+      selectedCardId = null;
+      pendingBoost = 0;
+      document.getElementById("exitConfirmModal").classList.add("hidden");
+      document.getElementById("matchOverModal").classList.add("hidden");
+      document.getElementById("privacyVeilModal").classList.add("hidden");
+      document.getElementById("waitingRoomPanel").classList.add("hidden");
+      document.getElementById("gameView").classList.add("hidden");
+      document.getElementById("headerScoreboard").classList.add("hidden");
+      document.getElementById("headerScoreboard").classList.remove("flex");
+      document.getElementById("btnLeaveMatch").classList.add("hidden");
+      document.getElementById("lobbyView").classList.remove("hidden");
+    };
+
+    function copyTextFallback(text) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      let ok = false;
+      try {
+        ok = document.execCommand("copy");
+      } catch (_e) {
+        ok = false;
+      }
+      document.body.removeChild(ta);
+      return ok;
+    }
+
+    window.copyInviteLink = function (explicitCode) {
+      const code = explicitCode || hostingRoomCode || gameState?.roomCode;
+      if (!code) return;
+      if (copyTextFallback(buildShareUrl(code))) {
+        showToast("Shareable 1v1 Invite Link copied!", "success");
+      } else {
+        showToast("Copy failed — select the link manually.", "error");
+      }
+    };
+
+    window.copyRoomCode = function () {
+      const code = hostingRoomCode || gameState?.roomCode;
+      if (!code) return;
+      if (copyTextFallback(code)) {
+        showToast(`Room Code ${code} copied!`, "success");
+      }
+    };
+
+    function showToast(msg, type = "info") {
+      const box = document.getElementById("toastContainer");
+      const toast = document.createElement("div");
+      const colors =
+        type === "success"
+          ? "bg-emerald-950/95 border-emerald-400/50 text-emerald-200"
+          : type === "error"
+          ? "bg-rose-950/95 border-rose-400/50 text-rose-200"
+          : "bg-slate-900/95 border-cyan-400/40 text-cyan-200";
+      toast.className = `pointer-events-auto px-4 py-2.5 rounded-xl border text-xs sm:text-sm font-semibold shadow-2xl backdrop-blur-md transition-all duration-300 ${colors}`;
+      toast.textContent = msg;
+      box.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        toast.style.transform = "translateX(20px)";
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+
+    /* =========================================================================
+       14. LOBBY SHOWCASE & INITIALIZATION
+    ========================================================================= */
+    function renderLobbyShowcase() {
+      const featured = ["mbappe", "bellingham", "vandijk"];
+      document.getElementById("showcaseCards").innerHTML = featured
+        .map((id, idx) => {
+          const rot = idx === 0 ? "-rotate-6 translate-y-2" : idx === 2 ? "rotate-6 translate-y-2" : "z-20 scale-105 animate-float";
+          return `<div class="${rot} transition-transform">${renderFootballerCardHTML(id, { size: "showcase" })}</div>`;
+        })
+        .join("");
+    }
+
+    window.addEventListener("load", () => {
+      renderLobbyShowcase();
+      initFirebase();
+    });
+  </script>
+</body>
+</html>
